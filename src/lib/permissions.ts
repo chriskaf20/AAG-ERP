@@ -3,18 +3,13 @@ import type { Enums } from "@/lib/database.types"
 export type AppRole = Enums<"app_role">
 export type DossierStatut = Enums<"dossier_statut">
 
-/** Rôles de direction : voient et pilotent toute l'organisation */
-export const DIRECTION: AppRole[] = [
+export const ROLES: AppRole[] = [
   "admin_systeme",
   "gerant",
   "associe",
   "directeur_commercial",
   "directeur_operations",
   "daf",
-]
-
-export const ROLES: AppRole[] = [
-  ...DIRECTION,
   "responsable_departement",
   "responsable_dossier",
   "acheteur",
@@ -24,30 +19,108 @@ export const ROLES: AppRole[] = [
 ]
 
 /** Rôles rattachés à un département */
-export const ROLES_DEPARTEMENT: AppRole[] = [
-  "responsable_departement",
-  "acheteur",
-  "responsable_rh",
-]
+export const ROLES_DEPARTEMENT: AppRole[] = ["responsable_departement", "acheteur", "responsable_rh"]
 
-const aUn = (roles: AppRole[], liste: AppRole[]) =>
-  roles.some((r) => liste.includes(r))
+export const PERMISSIONS = [
+  "dossiers.read_all",
+  "dossiers.read_dept",
+  "dossiers.read_own",
+  "dossiers.read_assigned",
+  "dossiers.create",
+  "dossiers.verify",
+  "dossiers.decide",
+  "clients.read",
+  "clients.write",
+  "devis.read",
+  "devis.write",
+  "devis.validate",
+  "devis.send",
+  "factures.read",
+  "factures.write",
+  "paiements.write",
+  "normalisation.write",
+  "marges.read",
+  "services.manage",
+  "admin.users",
+  "admin.settings",
+  "audit.read",
+  "reports.read",
+] as const
+
+export type Permission = (typeof PERMISSIONS)[number]
 
 /**
- * Miroir côté interface des règles de la base (RLS + fonctions).
- * Sert uniquement à afficher / masquer des actions : la base reste l'autorité.
+ * Matrice rôle → permissions (validée). Elle est aussi en base (role_permissions,
+ * migration générée depuis ce fichier) : la base reste l'autorité pour la RLS.
  */
-export const peut = {
-  direction: (r: AppRole[]) => aUn(r, DIRECTION),
-  creerDossier: (r: AppRole[]) =>
-    aUn(r, [...DIRECTION, "responsable_departement", "responsable_dossier"]),
-  ecrireClients: (r: AppRole[]) =>
-    aUn(r, [...DIRECTION, "responsable_departement", "responsable_dossier"]),
-  administrer: (r: AppRole[]) => aUn(r, ["admin_systeme", "gerant"]),
-  attribuerAdmin: (r: AppRole[]) => r.includes("admin_systeme"),
-  decider: (r: AppRole[]) => r.includes("gerant"),
-  voirAudit: (r: AppRole[]) => aUn(r, ["admin_systeme", "gerant", "daf"]),
-  interne: (r: AppRole[]) => r.some((x) => x !== "client"),
+export const ROLE_PERMISSIONS: Record<AppRole, readonly Permission[]> = {
+  admin_systeme: ["admin.users", "admin.settings", "audit.read"],
+  gerant: [
+    "dossiers.read_all", "dossiers.create", "dossiers.verify", "dossiers.decide",
+    "clients.read", "clients.write",
+    "devis.read", "devis.write", "devis.validate", "devis.send",
+    "factures.read", "factures.write", "paiements.write", "normalisation.write",
+    "marges.read", "services.manage",
+    "admin.users", "admin.settings", "audit.read", "reports.read",
+  ],
+  associe: ["marges.read", "reports.read"],
+  directeur_commercial: [
+    "dossiers.read_all", "dossiers.create", "dossiers.verify",
+    "clients.read", "clients.write", "devis.read", "devis.write",
+    "factures.read", "marges.read", "services.manage", "reports.read",
+  ],
+  directeur_operations: [
+    "dossiers.read_all", "dossiers.create", "dossiers.verify",
+    "clients.read", "clients.write", "devis.read", "devis.write",
+    "marges.read", "reports.read",
+  ],
+  daf: [
+    "dossiers.read_all", "clients.read", "devis.read",
+    "factures.read", "factures.write", "paiements.write", "normalisation.write",
+    "marges.read", "audit.read", "reports.read",
+  ],
+  responsable_departement: [
+    "dossiers.read_dept", "dossiers.create", "dossiers.verify",
+    "clients.read", "clients.write", "devis.read", "devis.write", "devis.send",
+    "factures.read", "marges.read",
+  ],
+  responsable_dossier: [
+    "dossiers.read_own", "dossiers.create", "dossiers.verify",
+    "clients.read", "clients.write", "devis.read", "devis.write",
+    "factures.read", "marges.read",
+  ],
+  acheteur: ["dossiers.read_dept", "clients.read"],
+  responsable_rh: ["dossiers.read_dept", "clients.read"],
+  agent_terrain: ["dossiers.read_assigned"],
+  client: [],
+}
+
+/** Union des permissions de plusieurs rôles, dans l'ordre de PERMISSIONS. */
+export function permissionsDe(roles: readonly AppRole[]): Permission[] {
+  const set = new Set(roles.flatMap((r) => ROLE_PERMISSIONS[r] ?? []))
+  return PERMISSIONS.filter((p) => set.has(p))
+}
+
+export const a = (perms: readonly Permission[], p: Permission) => perms.includes(p)
+export const aUne = (perms: readonly Permission[], ...ps: Permission[]) => ps.some((p) => perms.includes(p))
+
+export const LECTURE_DOSSIERS: Permission[] = ["dossiers.read_all", "dossiers.read_dept", "dossiers.read_own"]
+
+/** Droits d'un utilisateur sur UN dossier, calculés en base (portée incluse) par droits_dossier(). */
+export type DroitsDossier = {
+  voir: boolean
+  verify: boolean
+  decide: boolean
+  devis_read: boolean
+  devis_write: boolean
+  devis_validate: boolean
+  devis_send: boolean
+  factures_read: boolean
+  factures_write: boolean
+  paiements_write: boolean
+  normalisation_write: boolean
+  marges_read: boolean
+  clients_write: boolean
 }
 
 /** Statuts du circuit, dans l'ordre (sorties en fin de liste) */
@@ -80,19 +153,13 @@ export const STATUTS_PHASE_1: DossierStatut[] = [
 export const STATUTS_TERMINAUX: DossierStatut[] = ["cloture", "refuse", "classe_sans_suite"]
 
 /** Transitions manuelles possibles (hors décisions F-02 qui passent par la validation) */
-export function transitionsManuelles(
-  statut: DossierStatut,
-  roles: AppRole[],
-  pilote: boolean
-): DossierStatut[] {
+export function transitionsManuelles(statut: DossierStatut, d: Pick<DroitsDossier, "verify" | "decide">) {
   const t: DossierStatut[] = []
-  if (pilote && (statut === "nouveau" || statut === "complement_requis")) {
-    t.push("en_verification")
-  }
-  if (
-    peut.decider(roles) &&
-    ["nouveau", "en_verification", "complement_requis"].includes(statut)
-  ) {
+  if (d.verify && (statut === "nouveau" || statut === "complement_requis")) t.push("en_verification")
+  if (d.verify && statut === "accepte") t.push("devis_envoye")
+  if (d.verify && statut === "devis_envoye") t.push("en_lancement")
+  if (d.verify && statut === "receptionne_a_facturer") t.push("cloture")
+  if (d.decide && ["nouveau", "en_verification", "complement_requis"].includes(statut)) {
     t.push("classe_sans_suite")
   }
   return t

@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
-import { useTheme } from "next-themes"
-import { EllipsisVerticalIcon, LogOutIcon, MoonIcon, SunIcon } from "lucide-react"
+import { useTheme } from "@/components/theme-provider"
+import Link from "next/link"
+import { CircleUserRoundIcon, EllipsisVerticalIcon, LogOutIcon, MoonIcon, SunIcon } from "lucide-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -22,14 +23,11 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { initiales } from "@/lib/format"
-import type { AppRole } from "@/lib/permissions"
 
 export function NavUser({
   utilisateur,
-  roles,
 }: {
-  utilisateur: { nom: string; email: string }
-  roles: AppRole[]
+  utilisateur: { nom: string; email: string; roles: string }
 }) {
   const { isMobile } = useSidebar()
   const { resolvedTheme, setTheme } = useTheme()
@@ -62,7 +60,7 @@ export function NavUser({
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{utilisateur.nom}</span>
               <span className="truncate text-xs text-sidebar-foreground/70">
-                {roles.map((r) => t(`roles.${r}`)).join(", ")}
+                {utilisateur.roles}
               </span>
             </div>
             <EllipsisVerticalIcon className="ml-auto size-4" aria-hidden />
@@ -83,6 +81,10 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+              <DropdownMenuItem render={<Link href="/profil" />}>
+                <CircleUserRoundIcon />
+                {t("nav.profil")}
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
               >

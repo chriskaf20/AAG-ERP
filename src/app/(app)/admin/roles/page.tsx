@@ -2,14 +2,13 @@ import type { Metadata } from "next"
 
 import { PageBody, Section } from "@/components/page-body"
 import { SiteHeader } from "@/components/site-header"
-import { getContexte } from "@/lib/contexte"
-import { peut } from "@/lib/permissions"
+import { exiger } from "@/lib/contexte"
 import { MatriceRoles } from "./matrice-roles"
 
 export const metadata: Metadata = { title: "Rôles" }
 
 export default async function PageRoles() {
-  const ctx = await getContexte()
+  const ctx = await exiger("admin.users")
   const [{ data: roles }, { data: departements }] = await Promise.all([
     ctx.supabase
       .from("user_roles")
@@ -41,7 +40,7 @@ export default async function PageRoles() {
           <MatriceRoles
             utilisateurs={[...parId.values()].sort((a, b) => a.nom.localeCompare(b.nom, "fr"))}
             departements={departements ?? []}
-            peutAdmin={peut.attribuerAdmin(ctx.roles)}
+            peutAdmin={ctx.roles.includes("admin_systeme")}
             moi={ctx.userId}
           />
         </Section>

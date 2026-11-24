@@ -3,15 +3,14 @@ import { getTranslations } from "next-intl/server"
 
 import { PageBody, Section } from "@/components/page-body"
 import { SiteHeader } from "@/components/site-header"
-import { getContexte } from "@/lib/contexte"
-import { peut } from "@/lib/permissions"
+import { exiger } from "@/lib/contexte"
 import { NouvelUtilisateur } from "./nouvel-utilisateur"
 import { UtilisateursTable } from "./utilisateurs-table"
 
 export const metadata: Metadata = { title: "Utilisateurs" }
 
 export default async function PageUtilisateurs() {
-  const ctx = await getContexte()
+  const ctx = await exiger("admin.users")
   const t = await getTranslations("roles")
   const [{ data: roles }, { data: departements }] = await Promise.all([
     ctx.supabase
@@ -48,7 +47,7 @@ export default async function PageUtilisateurs() {
         actions={
           <NouvelUtilisateur
             departements={departements ?? []}
-            peutAdmin={peut.attribuerAdmin(ctx.roles)}
+            peutAdmin={ctx.roles.includes("admin_systeme")}
             serviceRoleOk={Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)}
           />
         }

@@ -1,18 +1,16 @@
 import type { Metadata } from "next"
-import { redirect } from "next/navigation"
 
 import { PageBody, Section } from "@/components/page-body"
 import { SiteHeader } from "@/components/site-header"
-import { getContexte } from "@/lib/contexte"
+import { exiger } from "@/lib/contexte"
 import { membresOrganisation } from "@/lib/membres"
-import { DIRECTION, peut } from "@/lib/permissions"
+import { a } from "@/lib/permissions"
 import { FormulaireF01 } from "./formulaire-f01"
 
 export const metadata: Metadata = { title: "Nouveau dossier (F-01)" }
 
 export default async function NouveauDossier() {
-  const ctx = await getContexte()
-  if (!peut.creerDossier(ctx.roles)) redirect("/dossiers")
+  const ctx = await exiger("dossiers.create")
   const { supabase, organisation } = ctx
 
   const [{ data: clients }, { data: departements }, membres] = await Promise.all([
@@ -22,12 +20,12 @@ export default async function NouveauDossier() {
       .eq("organization_id", organisation.id)
       .order("raison_sociale"),
     supabase.from("departments").select("id, code, nom").eq("organization_id", organisation.id).order("code"),
-    membresOrganisation(ctx, [...DIRECTION, "responsable_departement", "responsable_dossier"]),
+    membresOrganisation(ctx, ["gerant", "directeur_commercial", "directeur_operations", "responsable_departement", "responsable_dossier"]),
   ])
 
   // Un responsable de dossier sans autre rôle ne peut créer que ses propres dossiers
   const seulementSoi =
-    !peut.direction(ctx.roles) && !ctx.roles.includes("responsable_departement")
+    !a(ctx.permissions, "dossiers.read_all") && !a(ctx.permissions, "dossiers.read_dept")
 
   return (
     <>

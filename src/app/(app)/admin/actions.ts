@@ -5,16 +5,10 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 import { messageErreur, type EtatAction } from "@/lib/actions"
-import { getContexte } from "@/lib/contexte"
-import { peut, ROLES, ROLES_DEPARTEMENT, type AppRole } from "@/lib/permissions"
+import { autoriser } from "@/lib/contexte"
+import { ROLES, ROLES_DEPARTEMENT, type AppRole } from "@/lib/permissions"
 import { organisationSchema } from "@/lib/schemas"
 import { createAdminClient } from "@/lib/supabase/admin"
-
-async function contexteAdmin() {
-  const ctx = await getContexte()
-  if (!peut.administrer(ctx.roles)) throw new Error("Action réservée à l'administration")
-  return ctx
-}
 
 const roleSchema = z.enum(ROLES as [AppRole, ...AppRole[]])
 
@@ -29,7 +23,8 @@ const nouvelUtilisateur = z.object({
 export type EtatCreation = (EtatAction & { motDePasse?: string }) | null
 
 export async function creerUtilisateur(_: EtatCreation, fd: FormData): Promise<EtatCreation> {
-  const ctx = await contexteAdmin()
+  const { ctx, refus } = await autoriser("admin.users")
+  if (refus) return refus
   const parsed = nouvelUtilisateur.safeParse({
     email: fd.get("email"),
     nom_complet: fd.get("nom_complet"),
@@ -42,7 +37,7 @@ export async function creerUtilisateur(_: EtatCreation, fd: FormData): Promise<E
   if (u.role === "responsable_departement" && !u.department_id) {
     return { erreurs: { department_id: ["Département requis pour ce rôle"] } }
   }
-  if (u.role === "admin_systeme" && !peut.attribuerAdmin(ctx.roles)) {
+  if (u.role === "admin_systeme" && !ctx.roles.includes("admin_systeme")) {
     return { message: "Seul un administrateur système peut attribuer ce rôle" }
   }
 
@@ -87,7 +82,8 @@ export async function creerUtilisateur(_: EtatCreation, fd: FormData): Promise<E
 }
 
 export async function modifierProfil(userId: string, _: EtatAction, fd: FormData): Promise<EtatAction> {
-  const ctx = await contexteAdmin()
+  const { ctx, refus } = await autoriser("admin.users")
+  if (refus) return refus
   const nom = String(fd.get("nom_complet") ?? "").trim()
   if (nom.length < 2) return { erreurs: { nom_complet: ["Nom requis"] } }
   const { error } = await ctx.supabase
@@ -108,7 +104,8 @@ export async function ajouterRole(
   role: AppRole,
   departmentId: string | null
 ): Promise<EtatAction> {
-  const ctx = await contexteAdmin()
+  const { ctx, refus } = await autoriser("admin.users")
+  if (refus) return refus
   if (!roleSchema.safeParse(role).success) return { message: "Rôle invalide" }
   if (role === "responsable_departement" && !departmentId) {
     return { message: "Choisissez le département" }
@@ -126,7 +123,8 @@ export async function ajouterRole(
 }
 
 export async function retirerRole(roleId: string): Promise<EtatAction> {
-  const ctx = await contexteAdmin()
+  const { ctx, refus } = await autoriser("admin.users")
+  if (refus) return refus
   const { data: r } = await ctx.supabase.from("user_roles").select("user_id, role").eq("id", roleId).maybeSingle()
   if (r?.user_id === ctx.userId && (r.role === "admin_systeme" || r.role === "gerant")) {
     return { message: "Vous ne pouvez pas retirer votre propre rôle d'administration" }
@@ -140,15 +138,35 @@ export async function retirerRole(roleId: string): Promise<EtatAction> {
 }
 
 export async function enregistrerParametres(_: EtatAction, fd: FormData): Promise<EtatAction> {
-  const ctx = await contexteAdmin()
+  const { ctx, refus } = await autoriser("admin.settings")
+  if (refus) return refus
   const parsed = organisationSchema.safeParse(Object.fromEntries(fd.entries()))
   if (!parsed.success) return { erreurs: z.flattenError(parsed.error).fieldErrors }
-  const { seuil_validation_usd, acompte_pct, garantie_jours, ...org } = parsed.data
-  const parametres = {
-    ...((ctx.organisation.parametres as Record<string, unknown>) ?? {}),
+  const {
     seuil_validation_usd,
     acompte_pct,
     garantie_jours,
+    tva_pct,
+    taux_cdf,
+    delai_paiement_jours,
+    devis_validite_jours,
+    conditions_paiement,
+    ...org
+  } = parsed.data
+  const actuels = (ctx.organisation.parametres as Record<string, unknown>) ?? {}
+  const autresTaxes = (Array.isArray(actuels.taxes) ? (actuels.taxes as { code: string }[]) : []).filter(
+    (t) => t.code !== "TVA"
+  )
+  const parametres = {
+    ...actuels,
+    seuil_validation_usd,
+    acompte_pct,
+    garantie_jours,
+    taux_cdf,
+    delai_paiement_jours,
+    devis_validite_jours,
+    conditions_paiement,
+    taxes: [{ code: "TVA", libelle: "TVA", taux: tva_pct }, ...autresTaxes],
   }
   const { error, count } = await ctx.supabase
     .from("organizations")
@@ -158,4 +176,24 @@ export async function enregistrerParametres(_: EtatAction, fd: FormData): Promis
   if (!count) return { message: "Action non autorisée pour votre rôle" }
   revalidatePath("/", "layout")
   return { ok: true, message: "Paramètres enregistrés" }
+}
+
+export async function enregistrerRelances(actives: boolean, mode: "simulation" | "reel"): Promise<EtatAction> {
+  const { ctx, refus } = await autoriser("admin.settings")
+  if (refus) return refus
+  if (!ctx.roles.includes("gerant")) return { message: "Seul le gérant peut modifier les relances automatiques" }
+  if (mode !== "simulation" && mode !== "reel") return { message: "Mode invalide" }
+  const parametres = {
+    ...((ctx.organisation.parametres as Record<string, unknown>) ?? {}),
+    relances_actives: actives,
+    relances_mode: mode,
+  }
+  const { error, count } = await ctx.supabase
+    .from("organizations")
+    .update({ parametres }, { count: "exact" })
+    .eq("id", ctx.organisation.id)
+  if (error) return { message: messageErreur(error) }
+  if (!count) return { message: "Action non autorisée pour votre rôle" }
+  revalidatePath("/admin/parametres")
+  return { ok: true, message: actives ? "Relances activées" : "Relances désactivées" }
 }

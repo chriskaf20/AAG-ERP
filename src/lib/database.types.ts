@@ -67,6 +67,146 @@ export type Database = {
           },
         ]
       }
+      avenants: {
+        Row: {
+          contrat_id: string
+          created_at: string
+          created_by: string | null
+          date_effet: string | null
+          document_id: string | null
+          id: string
+          montant_delta: number
+          numero: string
+          objet: string
+          organization_id: string
+          signe_le: string | null
+          statut: Database["public"]["Enums"]["contrat_statut"]
+          updated_at: string
+        }
+        Insert: {
+          contrat_id: string
+          created_at?: string
+          created_by?: string | null
+          date_effet?: string | null
+          document_id?: string | null
+          id?: string
+          montant_delta?: number
+          numero?: string
+          objet: string
+          organization_id: string
+          signe_le?: string | null
+          statut?: Database["public"]["Enums"]["contrat_statut"]
+          updated_at?: string
+        }
+        Update: {
+          contrat_id?: string
+          created_at?: string
+          created_by?: string | null
+          date_effet?: string | null
+          document_id?: string | null
+          id?: string
+          montant_delta?: number
+          numero?: string
+          objet?: string
+          organization_id?: string
+          signe_le?: string | null
+          statut?: Database["public"]["Enums"]["contrat_statut"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avenants_contrat_id_fkey"
+            columns: ["contrat_id"]
+            isOneToOne: false
+            referencedRelation: "contrats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avenants_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avenants_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      avoirs: {
+        Row: {
+          code_authentification_def: string | null
+          created_at: string
+          created_by: string | null
+          date_avoir: string
+          dossier_id: string
+          facture_id: string
+          id: string
+          montant_ttc: number
+          motif: string
+          numero: string
+          numero_avoir_normalise: string | null
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          code_authentification_def?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_avoir?: string
+          dossier_id: string
+          facture_id: string
+          id?: string
+          montant_ttc: number
+          motif: string
+          numero: string
+          numero_avoir_normalise?: string | null
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          code_authentification_def?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_avoir?: string
+          dossier_id?: string
+          facture_id?: string
+          id?: string
+          montant_ttc?: number
+          motif?: string
+          numero?: string
+          numero_avoir_normalise?: string | null
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avoirs_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avoirs_facture_id_fkey"
+            columns: ["facture_id"]
+            isOneToOne: false
+            referencedRelation: "factures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avoirs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           adresse: string | null
@@ -122,6 +262,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clients_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compteurs: {
+        Row: {
+          annee: number
+          created_at: string
+          created_by: string | null
+          dernier: number
+          organization_id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          annee: number
+          created_at?: string
+          created_by?: string | null
+          dernier?: number
+          organization_id: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          annee?: number
+          created_at?: string
+          created_by?: string | null
+          dernier?: number
+          organization_id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compteurs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -186,6 +364,162 @@ export type Database = {
           },
         ]
       }
+      contrats: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date_debut: string | null
+          date_fin: string | null
+          devis_id: string | null
+          devise: Database["public"]["Enums"]["devise"]
+          document_id: string | null
+          dossier_id: string
+          id: string
+          montant: number | null
+          numero: string
+          objet: string
+          organization_id: string
+          signe_le: string | null
+          statut: Database["public"]["Enums"]["contrat_statut"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          devis_id?: string | null
+          devise?: Database["public"]["Enums"]["devise"]
+          document_id?: string | null
+          dossier_id: string
+          id?: string
+          montant?: number | null
+          numero?: string
+          objet: string
+          organization_id: string
+          signe_le?: string | null
+          statut?: Database["public"]["Enums"]["contrat_statut"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          devis_id?: string | null
+          devise?: Database["public"]["Enums"]["devise"]
+          document_id?: string | null
+          dossier_id?: string
+          id?: string
+          montant?: number | null
+          numero?: string
+          objet?: string
+          organization_id?: string
+          signe_le?: string | null
+          statut?: Database["public"]["Enums"]["contrat_statut"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrats_devis_id_fkey"
+            columns: ["devis_id"]
+            isOneToOne: false
+            referencedRelation: "devis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrats_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrats_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrats_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      def_transmissions: {
+        Row: {
+          avoir_id: string | null
+          created_at: string
+          created_by: string | null
+          facture_id: string | null
+          fournisseur: string | null
+          id: string
+          message: string | null
+          mode: string
+          organization_id: string
+          reponse: Json | null
+          requete: Json | null
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          avoir_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          facture_id?: string | null
+          fournisseur?: string | null
+          id?: string
+          message?: string | null
+          mode: string
+          organization_id: string
+          reponse?: Json | null
+          requete?: Json | null
+          statut: string
+          updated_at?: string
+        }
+        Update: {
+          avoir_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          facture_id?: string | null
+          fournisseur?: string | null
+          id?: string
+          message?: string | null
+          mode?: string
+          organization_id?: string
+          reponse?: Json | null
+          requete?: Json | null
+          statut?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "def_transmissions_avoir_id_fkey"
+            columns: ["avoir_id"]
+            isOneToOne: false
+            referencedRelation: "avoirs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "def_transmissions_facture_id_fkey"
+            columns: ["facture_id"]
+            isOneToOne: false
+            referencedRelation: "factures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "def_transmissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           code: Database["public"]["Enums"]["dept_code"]
@@ -220,6 +554,258 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      devis: {
+        Row: {
+          acompte_pct: number | null
+          conditions_paiement: string | null
+          created_at: string
+          created_by: string | null
+          date_devis: string
+          date_validite: string | null
+          depasse_seuil: boolean
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          envoye_le: string | null
+          envoye_par: string | null
+          id: string
+          marge: number
+          motif_refus: string | null
+          numero: string
+          objet: string | null
+          organization_id: string
+          refuse_le: string | null
+          signature_id: string | null
+          signe_le: string | null
+          soumis_le: string | null
+          soumis_par: string | null
+          statut: Database["public"]["Enums"]["devis_statut"]
+          taux_cdf: number
+          taxes: Json | null
+          total_brut: number
+          total_cout: number
+          total_ht: number
+          total_remise: number
+          total_taxes: number
+          total_ttc: number
+          total_ttc_usd: number
+          updated_at: string
+          valide_le: string | null
+          valide_par: string | null
+          validite_jours: number
+          version: number
+          version_precedente_id: string | null
+        }
+        Insert: {
+          acompte_pct?: number | null
+          conditions_paiement?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_devis?: string
+          date_validite?: string | null
+          depasse_seuil?: boolean
+          devise?: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          envoye_le?: string | null
+          envoye_par?: string | null
+          id?: string
+          marge?: number
+          motif_refus?: string | null
+          numero?: string
+          objet?: string | null
+          organization_id: string
+          refuse_le?: string | null
+          signature_id?: string | null
+          signe_le?: string | null
+          soumis_le?: string | null
+          soumis_par?: string | null
+          statut?: Database["public"]["Enums"]["devis_statut"]
+          taux_cdf?: number
+          taxes?: Json | null
+          total_brut?: number
+          total_cout?: number
+          total_ht?: number
+          total_remise?: number
+          total_taxes?: number
+          total_ttc?: number
+          total_ttc_usd?: number
+          updated_at?: string
+          valide_le?: string | null
+          valide_par?: string | null
+          validite_jours?: number
+          version?: number
+          version_precedente_id?: string | null
+        }
+        Update: {
+          acompte_pct?: number | null
+          conditions_paiement?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_devis?: string
+          date_validite?: string | null
+          depasse_seuil?: boolean
+          devise?: Database["public"]["Enums"]["devise"]
+          dossier_id?: string
+          envoye_le?: string | null
+          envoye_par?: string | null
+          id?: string
+          marge?: number
+          motif_refus?: string | null
+          numero?: string
+          objet?: string | null
+          organization_id?: string
+          refuse_le?: string | null
+          signature_id?: string | null
+          signe_le?: string | null
+          soumis_le?: string | null
+          soumis_par?: string | null
+          statut?: Database["public"]["Enums"]["devis_statut"]
+          taux_cdf?: number
+          taxes?: Json | null
+          total_brut?: number
+          total_cout?: number
+          total_ht?: number
+          total_remise?: number
+          total_taxes?: number
+          total_ttc?: number
+          total_ttc_usd?: number
+          updated_at?: string
+          valide_le?: string | null
+          valide_par?: string | null
+          validite_jours?: number
+          version?: number
+          version_precedente_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "devis_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devis_envoye_par_fkey"
+            columns: ["envoye_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devis_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devis_signature_id_fkey"
+            columns: ["signature_id"]
+            isOneToOne: false
+            referencedRelation: "signatures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devis_soumis_par_fkey"
+            columns: ["soumis_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devis_valide_par_fkey"
+            columns: ["valide_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devis_version_precedente_id_fkey"
+            columns: ["version_precedente_id"]
+            isOneToOne: false
+            referencedRelation: "devis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      devis_lignes: {
+        Row: {
+          cout_unitaire: number | null
+          created_at: string
+          created_by: string | null
+          description: string
+          devis_id: string
+          id: string
+          montant_brut: number | null
+          montant_ht: number | null
+          ordre: number
+          organization_id: string
+          prix_unitaire: number
+          quantite: number
+          remise_pct: number
+          service_id: string | null
+          unite: Database["public"]["Enums"]["unite_service"]
+          updated_at: string
+        }
+        Insert: {
+          cout_unitaire?: number | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          devis_id: string
+          id?: string
+          montant_brut?: number | null
+          montant_ht?: number | null
+          ordre?: number
+          organization_id: string
+          prix_unitaire?: number
+          quantite?: number
+          remise_pct?: number
+          service_id?: string | null
+          unite?: Database["public"]["Enums"]["unite_service"]
+          updated_at?: string
+        }
+        Update: {
+          cout_unitaire?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          devis_id?: string
+          id?: string
+          montant_brut?: number | null
+          montant_ht?: number | null
+          ordre?: number
+          organization_id?: string
+          prix_unitaire?: number
+          quantite?: number
+          remise_pct?: number
+          service_id?: string | null
+          unite?: Database["public"]["Enums"]["unite_service"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "devis_lignes_devis_id_fkey"
+            columns: ["devis_id"]
+            isOneToOne: false
+            referencedRelation: "devis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devis_lignes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devis_lignes_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
@@ -581,6 +1167,356 @@ export type Database = {
           },
         ]
       }
+      facture_lignes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          facture_id: string
+          id: string
+          montant_brut: number | null
+          montant_ht: number | null
+          ordre: number
+          organization_id: string
+          prix_unitaire: number
+          quantite: number
+          remise_pct: number
+          service_id: string | null
+          unite: Database["public"]["Enums"]["unite_service"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          facture_id: string
+          id?: string
+          montant_brut?: number | null
+          montant_ht?: number | null
+          ordre?: number
+          organization_id: string
+          prix_unitaire?: number
+          quantite?: number
+          remise_pct?: number
+          service_id?: string | null
+          unite?: Database["public"]["Enums"]["unite_service"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          facture_id?: string
+          id?: string
+          montant_brut?: number | null
+          montant_ht?: number | null
+          ordre?: number
+          organization_id?: string
+          prix_unitaire?: number
+          quantite?: number
+          remise_pct?: number
+          service_id?: string | null
+          unite?: Database["public"]["Enums"]["unite_service"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facture_lignes_facture_id_fkey"
+            columns: ["facture_id"]
+            isOneToOne: false
+            referencedRelation: "factures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facture_lignes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facture_lignes_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      factures: {
+        Row: {
+          code_authentification_def: string | null
+          created_at: string
+          created_by: string | null
+          date_emission: string | null
+          delai_paiement_jours: number
+          devis_id: string | null
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          echeance: string | null
+          emise_le: string | null
+          emise_par: string | null
+          id: string
+          montant_avoirs: number
+          montant_paye: number
+          normalisee_le: string | null
+          normalisee_par: string | null
+          numero: string | null
+          numero_facture_normalisee: string | null
+          objet: string | null
+          organization_id: string
+          periode_debut: string | null
+          periode_fin: string | null
+          qr_code: string | null
+          remise_client_le: string | null
+          remise_client_par: string | null
+          solde_du: number | null
+          statut: Database["public"]["Enums"]["facture_statut"]
+          taux_cdf: number
+          taxes: Json | null
+          total_brut: number
+          total_ht: number
+          total_remise: number
+          total_taxes: number
+          total_ttc: number
+          type: Database["public"]["Enums"]["facture_type"]
+          updated_at: string
+        }
+        Insert: {
+          code_authentification_def?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_emission?: string | null
+          delai_paiement_jours?: number
+          devis_id?: string | null
+          devise?: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          echeance?: string | null
+          emise_le?: string | null
+          emise_par?: string | null
+          id?: string
+          montant_avoirs?: number
+          montant_paye?: number
+          normalisee_le?: string | null
+          normalisee_par?: string | null
+          numero?: string | null
+          numero_facture_normalisee?: string | null
+          objet?: string | null
+          organization_id: string
+          periode_debut?: string | null
+          periode_fin?: string | null
+          qr_code?: string | null
+          remise_client_le?: string | null
+          remise_client_par?: string | null
+          solde_du?: number | null
+          statut?: Database["public"]["Enums"]["facture_statut"]
+          taux_cdf?: number
+          taxes?: Json | null
+          total_brut?: number
+          total_ht?: number
+          total_remise?: number
+          total_taxes?: number
+          total_ttc?: number
+          type: Database["public"]["Enums"]["facture_type"]
+          updated_at?: string
+        }
+        Update: {
+          code_authentification_def?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_emission?: string | null
+          delai_paiement_jours?: number
+          devis_id?: string | null
+          devise?: Database["public"]["Enums"]["devise"]
+          dossier_id?: string
+          echeance?: string | null
+          emise_le?: string | null
+          emise_par?: string | null
+          id?: string
+          montant_avoirs?: number
+          montant_paye?: number
+          normalisee_le?: string | null
+          normalisee_par?: string | null
+          numero?: string | null
+          numero_facture_normalisee?: string | null
+          objet?: string | null
+          organization_id?: string
+          periode_debut?: string | null
+          periode_fin?: string | null
+          qr_code?: string | null
+          remise_client_le?: string | null
+          remise_client_par?: string | null
+          solde_du?: number | null
+          statut?: Database["public"]["Enums"]["facture_statut"]
+          taux_cdf?: number
+          taxes?: Json | null
+          total_brut?: number
+          total_ht?: number
+          total_remise?: number
+          total_taxes?: number
+          total_ttc?: number
+          type?: Database["public"]["Enums"]["facture_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "factures_devis_id_fkey"
+            columns: ["devis_id"]
+            isOneToOne: false
+            referencedRelation: "devis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "factures_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "factures_emise_par_fkey"
+            columns: ["emise_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "factures_normalisee_par_fkey"
+            columns: ["normalisee_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "factures_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "factures_remise_client_par_fkey"
+            columns: ["remise_client_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      liens_signature: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dossier_id: string
+          expire_le: string
+          id: string
+          objet_id: string
+          objet_type: Database["public"]["Enums"]["signature_objet"]
+          organization_id: string
+          revoque_le: string | null
+          token_hash: string
+          updated_at: string
+          utilise_le: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dossier_id: string
+          expire_le: string
+          id?: string
+          objet_id: string
+          objet_type: Database["public"]["Enums"]["signature_objet"]
+          organization_id: string
+          revoque_le?: string | null
+          token_hash: string
+          updated_at?: string
+          utilise_le?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dossier_id?: string
+          expire_le?: string
+          id?: string
+          objet_id?: string
+          objet_type?: Database["public"]["Enums"]["signature_objet"]
+          organization_id?: string
+          revoque_le?: string | null
+          token_hash?: string
+          updated_at?: string
+          utilise_le?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liens_signature_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liens_signature_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          lien: string | null
+          lu_le: string | null
+          message: string | null
+          organization_id: string
+          titre: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          lien?: string | null
+          lu_le?: string | null
+          message?: string | null
+          organization_id: string
+          titre: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          lien?: string | null
+          lu_le?: string | null
+          message?: string | null
+          organization_id?: string
+          titre?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           adresse: string | null
@@ -641,6 +1577,76 @@ export type Database = {
         }
         Relationships: []
       }
+      paiements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date_paiement: string
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string | null
+          facture_id: string
+          id: string
+          mode: Database["public"]["Enums"]["paiement_mode"]
+          montant: number
+          numero_recu: string
+          organization_id: string
+          reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date_paiement?: string
+          devise?: Database["public"]["Enums"]["devise"]
+          dossier_id?: string | null
+          facture_id: string
+          id?: string
+          mode: Database["public"]["Enums"]["paiement_mode"]
+          montant: number
+          numero_recu?: string
+          organization_id: string
+          reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date_paiement?: string
+          devise?: Database["public"]["Enums"]["devise"]
+          dossier_id?: string | null
+          facture_id?: string
+          id?: string
+          mode?: Database["public"]["Enums"]["paiement_mode"]
+          montant?: number
+          numero_recu?: string
+          organization_id?: string
+          reference?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paiements_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paiements_facture_id_fkey"
+            columns: ["facture_id"]
+            isOneToOne: false
+            referencedRelation: "factures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paiements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -681,6 +1687,348 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pv_lancement: {
+        Row: {
+          acces_site_confirme: boolean
+          acompte_confirme: boolean
+          created_at: string
+          created_by: string | null
+          date_lancement: string
+          devis_id: string | null
+          dossier_id: string
+          id: string
+          interlocuteurs_confirmes: boolean
+          lieu: string | null
+          livrables_confirmes: boolean
+          observations: string | null
+          organization_id: string
+          perimetre_confirme: boolean
+          planning_confirme: boolean
+          signature_atlas_id: string | null
+          signature_client_id: string | null
+          signe_le: string | null
+          updated_at: string
+        }
+        Insert: {
+          acces_site_confirme?: boolean
+          acompte_confirme?: boolean
+          created_at?: string
+          created_by?: string | null
+          date_lancement?: string
+          devis_id?: string | null
+          dossier_id: string
+          id?: string
+          interlocuteurs_confirmes?: boolean
+          lieu?: string | null
+          livrables_confirmes?: boolean
+          observations?: string | null
+          organization_id: string
+          perimetre_confirme?: boolean
+          planning_confirme?: boolean
+          signature_atlas_id?: string | null
+          signature_client_id?: string | null
+          signe_le?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acces_site_confirme?: boolean
+          acompte_confirme?: boolean
+          created_at?: string
+          created_by?: string | null
+          date_lancement?: string
+          devis_id?: string | null
+          dossier_id?: string
+          id?: string
+          interlocuteurs_confirmes?: boolean
+          lieu?: string | null
+          livrables_confirmes?: boolean
+          observations?: string | null
+          organization_id?: string
+          perimetre_confirme?: boolean
+          planning_confirme?: boolean
+          signature_atlas_id?: string | null
+          signature_client_id?: string | null
+          signe_le?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_lancement_devis_id_fkey"
+            columns: ["devis_id"]
+            isOneToOne: false
+            referencedRelation: "devis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_lancement_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_lancement_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_lancement_signature_atlas_id_fkey"
+            columns: ["signature_atlas_id"]
+            isOneToOne: false
+            referencedRelation: "signatures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_lancement_signature_client_id_fkey"
+            columns: ["signature_client_id"]
+            isOneToOne: false
+            referencedRelation: "signatures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      relances: {
+        Row: {
+          canal: string
+          created_at: string
+          created_by: string | null
+          destinataire: string | null
+          dossier_id: string
+          envoyee_le: string
+          erreur: string | null
+          id: string
+          niveau: Database["public"]["Enums"]["relance_niveau"]
+          objet_id: string
+          objet_type: string
+          organization_id: string
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          canal?: string
+          created_at?: string
+          created_by?: string | null
+          destinataire?: string | null
+          dossier_id: string
+          envoyee_le?: string
+          erreur?: string | null
+          id?: string
+          niveau: Database["public"]["Enums"]["relance_niveau"]
+          objet_id: string
+          objet_type: string
+          organization_id: string
+          statut: string
+          updated_at?: string
+        }
+        Update: {
+          canal?: string
+          created_at?: string
+          created_by?: string | null
+          destinataire?: string | null
+          dossier_id?: string
+          envoyee_le?: string
+          erreur?: string | null
+          id?: string
+          niveau?: Database["public"]["Enums"]["relance_niveau"]
+          objet_id?: string
+          objet_type?: string
+          organization_id?: string
+          statut?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relances_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relances_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_permissions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          organization_id: string
+          permission: Database["public"]["Enums"]["app_permission"]
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id: string
+          permission: Database["public"]["Enums"]["app_permission"]
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          permission?: Database["public"]["Enums"]["app_permission"]
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          actif: boolean
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          id: string
+          nom: string
+          organization_id: string
+          prix_base_usd: number
+          unite: Database["public"]["Enums"]["unite_service"]
+          updated_at: string
+        }
+        Insert: {
+          actif?: boolean
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          nom: string
+          organization_id: string
+          prix_base_usd?: number
+          unite?: Database["public"]["Enums"]["unite_service"]
+          updated_at?: string
+        }
+        Update: {
+          actif?: boolean
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          nom?: string
+          organization_id?: string
+          prix_base_usd?: number
+          unite?: Database["public"]["Enums"]["unite_service"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signatures: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dossier_id: string
+          id: string
+          image_png: string
+          ip: unknown
+          lien_id: string | null
+          nom_signataire: string
+          objet_id: string
+          objet_type: Database["public"]["Enums"]["signature_objet"]
+          organization_id: string
+          partie: string
+          signe_le: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dossier_id: string
+          id?: string
+          image_png: string
+          ip?: unknown
+          lien_id?: string | null
+          nom_signataire: string
+          objet_id: string
+          objet_type: Database["public"]["Enums"]["signature_objet"]
+          organization_id: string
+          partie: string
+          signe_le?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dossier_id?: string
+          id?: string
+          image_png?: string
+          ip?: unknown
+          lien_id?: string | null
+          nom_signataire?: string
+          objet_id?: string
+          objet_type?: Database["public"]["Enums"]["signature_objet"]
+          organization_id?: string
+          partie?: string
+          signe_le?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signatures_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signatures_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signatures_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -873,9 +2221,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calcul_taxes: { Args: { p_ht: number; p_taxes: Json }; Returns: number }
       can_edit_dossier: { Args: { p_dossier: string }; Returns: boolean }
       can_see_client: { Args: { p_client: string }; Returns: boolean }
       can_see_dossier: { Args: { p_dossier: string }; Returns: boolean }
+      can_see_finance: { Args: { p_dossier: string }; Returns: boolean }
       can_write_clients: { Args: { p_org: string }; Returns: boolean }
       change_dossier_status: {
         Args: {
@@ -916,11 +2266,281 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      contexte_utilisateur: { Args: { p_org: string }; Returns: Json }
+      contrat_dossier: { Args: { p_contrat: string }; Returns: string }
+      creer_facture_depuis_devis: {
+        Args: {
+          p_devis: string
+          p_type: Database["public"]["Enums"]["facture_type"]
+        }
+        Returns: string
+      }
+      creer_lien_pv: { Args: { p_pv: string }; Returns: string }
+      creer_lien_signature: {
+        Args: {
+          p_dossier: string
+          p_expire_le: string
+          p_objet_id: string
+          p_objet_type: Database["public"]["Enums"]["signature_objet"]
+          p_org: string
+        }
+        Returns: string
+      }
+      devis_dossier: { Args: { p_devis: string }; Returns: string }
+      devis_totaux: {
+        Args: { d: Database["public"]["Tables"]["devis"]["Row"] }
+        Returns: {
+          acompte_pct: number | null
+          conditions_paiement: string | null
+          created_at: string
+          created_by: string | null
+          date_devis: string
+          date_validite: string | null
+          depasse_seuil: boolean
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          envoye_le: string | null
+          envoye_par: string | null
+          id: string
+          marge: number
+          motif_refus: string | null
+          numero: string
+          objet: string | null
+          organization_id: string
+          refuse_le: string | null
+          signature_id: string | null
+          signe_le: string | null
+          soumis_le: string | null
+          soumis_par: string | null
+          statut: Database["public"]["Enums"]["devis_statut"]
+          taux_cdf: number
+          taxes: Json | null
+          total_brut: number
+          total_cout: number
+          total_ht: number
+          total_remise: number
+          total_taxes: number
+          total_ttc: number
+          total_ttc_usd: number
+          updated_at: string
+          valide_le: string | null
+          valide_par: string | null
+          validite_jours: number
+          version: number
+          version_precedente_id: string | null
+        }
+        SetofOptions: {
+          from: "devis"
+          to: "devis"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      donnees_accueil: { Args: { p_org: string }; Returns: Json }
+      dossier_perm: {
+        Args: {
+          p_dossier: string
+          p_perm?: Database["public"]["Enums"]["app_permission"]
+        }
+        Returns: boolean
+      }
+      droits_dossier: { Args: { p_dossier: string }; Returns: Json }
+      emettre_avoir: {
+        Args: { p_facture: string; p_montant: number; p_motif: string }
+        Returns: {
+          code_authentification_def: string | null
+          created_at: string
+          created_by: string | null
+          date_avoir: string
+          dossier_id: string
+          facture_id: string
+          id: string
+          montant_ttc: number
+          motif: string
+          numero: string
+          numero_avoir_normalise: string | null
+          organization_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "avoirs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      emettre_facture: {
+        Args: { p_facture: string }
+        Returns: {
+          code_authentification_def: string | null
+          created_at: string
+          created_by: string | null
+          date_emission: string | null
+          delai_paiement_jours: number
+          devis_id: string | null
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          echeance: string | null
+          emise_le: string | null
+          emise_par: string | null
+          id: string
+          montant_avoirs: number
+          montant_paye: number
+          normalisee_le: string | null
+          normalisee_par: string | null
+          numero: string | null
+          numero_facture_normalisee: string | null
+          objet: string | null
+          organization_id: string
+          periode_debut: string | null
+          periode_fin: string | null
+          qr_code: string | null
+          remise_client_le: string | null
+          remise_client_par: string | null
+          solde_du: number | null
+          statut: Database["public"]["Enums"]["facture_statut"]
+          taux_cdf: number
+          taxes: Json | null
+          total_brut: number
+          total_ht: number
+          total_remise: number
+          total_taxes: number
+          total_ttc: number
+          type: Database["public"]["Enums"]["facture_type"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "factures"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      enregistrer_relance: {
+        Args: {
+          p_destinataire: string
+          p_dossier: string
+          p_erreur?: string
+          p_niveau: Database["public"]["Enums"]["relance_niveau"]
+          p_objet_id: string
+          p_objet_type: string
+          p_org: string
+          p_statut: string
+        }
+        Returns: string
+      }
+      envoyer_devis: { Args: { p_devis: string }; Returns: Json }
+      facture_dossier: { Args: { p_facture: string }; Returns: string }
+      facture_recalculer: {
+        Args: { p_facture: string }
+        Returns: {
+          code_authentification_def: string | null
+          created_at: string
+          created_by: string | null
+          date_emission: string | null
+          delai_paiement_jours: number
+          devis_id: string | null
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          echeance: string | null
+          emise_le: string | null
+          emise_par: string | null
+          id: string
+          montant_avoirs: number
+          montant_paye: number
+          normalisee_le: string | null
+          normalisee_par: string | null
+          numero: string | null
+          numero_facture_normalisee: string | null
+          objet: string | null
+          organization_id: string
+          periode_debut: string | null
+          periode_fin: string | null
+          qr_code: string | null
+          remise_client_le: string | null
+          remise_client_par: string | null
+          solde_du: number | null
+          statut: Database["public"]["Enums"]["facture_statut"]
+          taux_cdf: number
+          taxes: Json | null
+          total_brut: number
+          total_ht: number
+          total_remise: number
+          total_taxes: number
+          total_ttc: number
+          type: Database["public"]["Enums"]["facture_type"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "factures"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      facture_statut_calcule: {
+        Args: { f: Database["public"]["Tables"]["factures"]["Row"] }
+        Returns: Database["public"]["Enums"]["facture_statut"]
+      }
+      facture_totaux: {
+        Args: { f: Database["public"]["Tables"]["factures"]["Row"] }
+        Returns: {
+          code_authentification_def: string | null
+          created_at: string
+          created_by: string | null
+          date_emission: string | null
+          delai_paiement_jours: number
+          devis_id: string | null
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          echeance: string | null
+          emise_le: string | null
+          emise_par: string | null
+          id: string
+          montant_avoirs: number
+          montant_paye: number
+          normalisee_le: string | null
+          normalisee_par: string | null
+          numero: string | null
+          numero_facture_normalisee: string | null
+          objet: string | null
+          organization_id: string
+          periode_debut: string | null
+          periode_fin: string | null
+          qr_code: string | null
+          remise_client_le: string | null
+          remise_client_par: string | null
+          solde_du: number | null
+          statut: Database["public"]["Enums"]["facture_statut"]
+          taux_cdf: number
+          taxes: Json | null
+          total_brut: number
+          total_ht: number
+          total_remise: number
+          total_taxes: number
+          total_ttc: number
+          type: Database["public"]["Enums"]["facture_type"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "factures"
+          to: "factures"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_dept_role: {
         Args: {
           p_dept: string
           p_org: string
           p_roles: Database["public"]["Enums"]["app_role"][]
+        }
+        Returns: boolean
+      }
+      has_permission: {
+        Args: {
+          p_org: string
+          p_perm: Database["public"]["Enums"]["app_permission"]
         }
         Returns: boolean
       }
@@ -931,8 +2551,233 @@ export type Database = {
         }
         Returns: boolean
       }
+      initialiser_permissions: { Args: { p_org: string }; Returns: undefined }
       is_direction: { Args: { p_org: string }; Returns: boolean }
+      is_finance: { Args: { p_org: string }; Returns: boolean }
       is_internal: { Args: { p_org: string }; Returns: boolean }
+      lien_signature_info: { Args: { p_token: string }; Returns: Json }
+      marquer_facture_remise: {
+        Args: { p_facture: string }
+        Returns: {
+          code_authentification_def: string | null
+          created_at: string
+          created_by: string | null
+          date_emission: string | null
+          delai_paiement_jours: number
+          devis_id: string | null
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          echeance: string | null
+          emise_le: string | null
+          emise_par: string | null
+          id: string
+          montant_avoirs: number
+          montant_paye: number
+          normalisee_le: string | null
+          normalisee_par: string | null
+          numero: string | null
+          numero_facture_normalisee: string | null
+          objet: string | null
+          organization_id: string
+          periode_debut: string | null
+          periode_fin: string | null
+          qr_code: string | null
+          remise_client_le: string | null
+          remise_client_par: string | null
+          solde_du: number | null
+          statut: Database["public"]["Enums"]["facture_statut"]
+          taux_cdf: number
+          taxes: Json | null
+          total_brut: number
+          total_ht: number
+          total_remise: number
+          total_taxes: number
+          total_ttc: number
+          type: Database["public"]["Enums"]["facture_type"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "factures"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      mes_permissions: {
+        Args: { p_org: string }
+        Returns: Database["public"]["Enums"]["app_permission"][]
+      }
+      normaliser_facture: {
+        Args: {
+          p_code_def: string
+          p_facture: string
+          p_numero_normalise: string
+          p_qr_code?: string
+        }
+        Returns: {
+          code_authentification_def: string | null
+          created_at: string
+          created_by: string | null
+          date_emission: string | null
+          delai_paiement_jours: number
+          devis_id: string | null
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          echeance: string | null
+          emise_le: string | null
+          emise_par: string | null
+          id: string
+          montant_avoirs: number
+          montant_paye: number
+          normalisee_le: string | null
+          normalisee_par: string | null
+          numero: string | null
+          numero_facture_normalisee: string | null
+          objet: string | null
+          organization_id: string
+          periode_debut: string | null
+          periode_fin: string | null
+          qr_code: string | null
+          remise_client_le: string | null
+          remise_client_par: string | null
+          solde_du: number | null
+          statut: Database["public"]["Enums"]["facture_statut"]
+          taux_cdf: number
+          taxes: Json | null
+          total_brut: number
+          total_ht: number
+          total_remise: number
+          total_taxes: number
+          total_ttc: number
+          type: Database["public"]["Enums"]["facture_type"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "factures"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      nouvelle_version_devis: { Args: { p_devis: string }; Returns: string }
+      peut_sur: {
+        Args: {
+          p_dept: string
+          p_org: string
+          p_perm: Database["public"]["Enums"]["app_permission"]
+          p_responsable: string
+        }
+        Returns: boolean
+      }
+      prochain_numero: {
+        Args: { p_date?: string; p_org: string; p_type: string }
+        Returns: string
+      }
+      pv_points_confirmes: {
+        Args: { p: Database["public"]["Tables"]["pv_lancement"]["Row"] }
+        Returns: boolean
+      }
+      rapport_indicateurs: { Args: { p_org: string }; Returns: Json }
+      refuser_devis: {
+        Args: { p_devis: string; p_motif: string }
+        Returns: {
+          acompte_pct: number | null
+          conditions_paiement: string | null
+          created_at: string
+          created_by: string | null
+          date_devis: string
+          date_validite: string | null
+          depasse_seuil: boolean
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          envoye_le: string | null
+          envoye_par: string | null
+          id: string
+          marge: number
+          motif_refus: string | null
+          numero: string
+          objet: string | null
+          organization_id: string
+          refuse_le: string | null
+          signature_id: string | null
+          signe_le: string | null
+          soumis_le: string | null
+          soumis_par: string | null
+          statut: Database["public"]["Enums"]["devis_statut"]
+          taux_cdf: number
+          taxes: Json | null
+          total_brut: number
+          total_cout: number
+          total_ht: number
+          total_remise: number
+          total_taxes: number
+          total_ttc: number
+          total_ttc_usd: number
+          updated_at: string
+          valide_le: string | null
+          valide_par: string | null
+          validite_jours: number
+          version: number
+          version_precedente_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "devis"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      regenerer_lien_devis: { Args: { p_devis: string }; Returns: string }
+      relances_a_envoyer: { Args: never; Returns: Json }
+      role_a: {
+        Args: {
+          p_org: string
+          p_perm: Database["public"]["Enums"]["app_permission"]
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      signer_par_lien: {
+        Args: {
+          p_image: string
+          p_ip: unknown
+          p_nom: string
+          p_token: string
+          p_user_agent: string
+        }
+        Returns: Json
+      }
+      signer_pv: {
+        Args: { p_image: string; p_nom: string; p_partie: string; p_pv: string }
+        Returns: {
+          acces_site_confirme: boolean
+          acompte_confirme: boolean
+          created_at: string
+          created_by: string | null
+          date_lancement: string
+          devis_id: string | null
+          dossier_id: string
+          id: string
+          interlocuteurs_confirmes: boolean
+          lieu: string | null
+          livrables_confirmes: boolean
+          observations: string | null
+          organization_id: string
+          perimetre_confirme: boolean
+          planning_confirme: boolean
+          signature_atlas_id: string | null
+          signature_client_id: string | null
+          signe_le: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pv_lancement"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      soumettre_devis: { Args: { p_devis: string }; Returns: number }
       storage_client_acces: {
         Args: { p_ecriture: boolean; p_name: string }
         Returns: boolean
@@ -941,7 +2786,57 @@ export type Database = {
         Args: { p_ecriture: boolean; p_name: string }
         Returns: boolean
       }
+      taches_quotidiennes: { Args: never; Returns: Json }
       user_org_ids: { Args: never; Returns: string[] }
+      valider_devis: {
+        Args: { p_devis: string }
+        Returns: {
+          acompte_pct: number | null
+          conditions_paiement: string | null
+          created_at: string
+          created_by: string | null
+          date_devis: string
+          date_validite: string | null
+          depasse_seuil: boolean
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string
+          envoye_le: string | null
+          envoye_par: string | null
+          id: string
+          marge: number
+          motif_refus: string | null
+          numero: string
+          objet: string | null
+          organization_id: string
+          refuse_le: string | null
+          signature_id: string | null
+          signe_le: string | null
+          soumis_le: string | null
+          soumis_par: string | null
+          statut: Database["public"]["Enums"]["devis_statut"]
+          taux_cdf: number
+          taxes: Json | null
+          total_brut: number
+          total_cout: number
+          total_ht: number
+          total_remise: number
+          total_taxes: number
+          total_ttc: number
+          total_ttc_usd: number
+          updated_at: string
+          valide_le: string | null
+          valide_par: string | null
+          validite_jours: number
+          version: number
+          version_precedente_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "devis"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       valider_verification: {
         Args: { p_verification_id: string }
         Returns: {
@@ -983,6 +2878,30 @@ export type Database = {
       }
     }
     Enums: {
+      app_permission:
+        | "dossiers.read_all"
+        | "dossiers.read_dept"
+        | "dossiers.read_own"
+        | "dossiers.read_assigned"
+        | "dossiers.create"
+        | "dossiers.verify"
+        | "dossiers.decide"
+        | "clients.read"
+        | "clients.write"
+        | "devis.read"
+        | "devis.write"
+        | "devis.validate"
+        | "devis.send"
+        | "factures.read"
+        | "factures.write"
+        | "paiements.write"
+        | "normalisation.write"
+        | "marges.read"
+        | "services.manage"
+        | "admin.users"
+        | "admin.settings"
+        | "audit.read"
+        | "reports.read"
       app_role:
         | "admin_systeme"
         | "gerant"
@@ -998,7 +2917,16 @@ export type Database = {
         | "client"
       canal_reception: "visite" | "appel" | "whatsapp" | "email" | "site_web"
       client_type: "entreprise" | "particulier"
+      contrat_statut: "brouillon" | "signe" | "resilie"
       dept_code: "AFF" | "SUP" | "PEF" | "DIG"
+      devis_statut:
+        | "brouillon"
+        | "valide"
+        | "envoye"
+        | "signe"
+        | "refuse"
+        | "expire"
+        | "remplace"
       devise: "USD" | "CDF"
       document_type:
         | "rccm"
@@ -1009,6 +2937,11 @@ export type Database = {
         | "fiche_ouverture"
         | "fiche_verification"
         | "autre"
+        | "devis"
+        | "facture"
+        | "contrat"
+        | "pv_lancement"
+        | "recu"
       dossier_statut:
         | "nouveau"
         | "en_verification"
@@ -1023,7 +2956,25 @@ export type Database = {
         | "cloture"
         | "refuse"
         | "classe_sans_suite"
+      facture_statut:
+        | "brouillon"
+        | "emise"
+        | "normalisee"
+        | "partiellement_payee"
+        | "payee"
+        | "en_retard"
+        | "annulee"
+      facture_type: "acompte" | "solde" | "mensuelle"
+      paiement_mode:
+        | "banque"
+        | "mpesa"
+        | "airtel_money"
+        | "orange_money"
+        | "especes"
       piece_type: "rccm" | "id_nat" | "nif" | "piece_identite" | "autre"
+      relance_niveau: "j7" | "j15" | "j30"
+      signature_objet: "devis" | "pv_lancement"
+      unite_service: "forfait" | "jour" | "mois" | "m2" | "course"
       verification_decision: "accepte" | "complement_requis" | "refuse"
     }
     CompositeTypes: {
@@ -1152,6 +3103,31 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_permission: [
+        "dossiers.read_all",
+        "dossiers.read_dept",
+        "dossiers.read_own",
+        "dossiers.read_assigned",
+        "dossiers.create",
+        "dossiers.verify",
+        "dossiers.decide",
+        "clients.read",
+        "clients.write",
+        "devis.read",
+        "devis.write",
+        "devis.validate",
+        "devis.send",
+        "factures.read",
+        "factures.write",
+        "paiements.write",
+        "normalisation.write",
+        "marges.read",
+        "services.manage",
+        "admin.users",
+        "admin.settings",
+        "audit.read",
+        "reports.read",
+      ],
       app_role: [
         "admin_systeme",
         "gerant",
@@ -1168,7 +3144,17 @@ export const Constants = {
       ],
       canal_reception: ["visite", "appel", "whatsapp", "email", "site_web"],
       client_type: ["entreprise", "particulier"],
+      contrat_statut: ["brouillon", "signe", "resilie"],
       dept_code: ["AFF", "SUP", "PEF", "DIG"],
+      devis_statut: [
+        "brouillon",
+        "valide",
+        "envoye",
+        "signe",
+        "refuse",
+        "expire",
+        "remplace",
+      ],
       devise: ["USD", "CDF"],
       document_type: [
         "rccm",
@@ -1179,6 +3165,11 @@ export const Constants = {
         "fiche_ouverture",
         "fiche_verification",
         "autre",
+        "devis",
+        "facture",
+        "contrat",
+        "pv_lancement",
+        "recu",
       ],
       dossier_statut: [
         "nouveau",
@@ -1195,7 +3186,27 @@ export const Constants = {
         "refuse",
         "classe_sans_suite",
       ],
+      facture_statut: [
+        "brouillon",
+        "emise",
+        "normalisee",
+        "partiellement_payee",
+        "payee",
+        "en_retard",
+        "annulee",
+      ],
+      facture_type: ["acompte", "solde", "mensuelle"],
+      paiement_mode: [
+        "banque",
+        "mpesa",
+        "airtel_money",
+        "orange_money",
+        "especes",
+      ],
       piece_type: ["rccm", "id_nat", "nif", "piece_identite", "autre"],
+      relance_niveau: ["j7", "j15", "j30"],
+      signature_objet: ["devis", "pv_lancement"],
+      unite_service: ["forfait", "jour", "mois", "m2", "course"],
       verification_decision: ["accepte", "complement_requis", "refuse"],
     },
   },

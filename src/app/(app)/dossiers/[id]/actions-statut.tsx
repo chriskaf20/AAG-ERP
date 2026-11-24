@@ -18,6 +18,13 @@ import { Textarea } from "@/components/ui/textarea"
 import type { DossierStatut } from "@/lib/permissions"
 import { changerStatut } from "../actions"
 
+const LIBELLES: Partial<Record<DossierStatut, string>> = {
+  en_verification: "Lancer la vérification",
+  devis_envoye: "Passer en « Devis envoyé »",
+  en_lancement: "Lancer le dossier",
+  cloture: "Clôturer",
+}
+
 export function ActionsStatut({
   dossierId,
   transitions,
@@ -58,7 +65,7 @@ export function ActionsStatut({
           </Button>
         ) : (
           <Button key={s} size="sm" disabled={enCours} onClick={() => appliquer(s)}>
-            {s === "en_verification" ? "Lancer la vérification" : t(s)}
+            {LIBELLES[s] ?? t(s)}
           </Button>
         )
       )}

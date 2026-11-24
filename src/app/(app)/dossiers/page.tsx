@@ -3,27 +3,28 @@ import type { Metadata } from "next"
 import { ButtonLink } from "@/components/button-link"
 import { PageBody, Section } from "@/components/page-body"
 import { SiteHeader } from "@/components/site-header"
-import { getContexte } from "@/lib/contexte"
-import { peut } from "@/lib/permissions"
+import { exiger, getOrgId, getSupabase } from "@/lib/contexte"
+import { a, LECTURE_DOSSIERS } from "@/lib/permissions"
 import { DossiersView } from "./dossiers-view"
 
 export const metadata: Metadata = { title: "Dossiers" }
 
 export default async function PageDossiers({ searchParams }: PageProps<"/dossiers">) {
-  const sp = await searchParams
-  const ctx = await getContexte()
-  const { supabase, roles, organisation } = ctx
+  const [supabase, orgId] = await Promise.all([getSupabase(), getOrgId()])
 
-  const [{ data }, { data: departements }] = await Promise.all([
+  const [sp, ctx, { data }] = await Promise.all([
+    searchParams,
+    exiger(...LECTURE_DOSSIERS),
     supabase
       .from("dossiers")
       .select(
         "id, numero, statut, service, date_reception, delai_souhaite, budget_indicatif, budget_devise, department_id, responsable_id, clients(raison_sociale), departments(code), profiles!dossiers_responsable_id_fkey(nom_complet)"
       )
-      .eq("organization_id", organisation.id)
+      .eq("organization_id", orgId)
       .order("created_at", { ascending: false }),
-    supabase.from("departments").select("id, code, nom").eq("organization_id", organisation.id).order("code"),
   ])
+  const departements = ctx.departementsOrg
+  const { permissions } = ctx
 
   const dossiers = (data ?? []).map((d) => ({
     id: d.id,
@@ -49,7 +50,7 @@ export default async function PageDossiers({ searchParams }: PageProps<"/dossier
         titre="Dossiers"
         sousTitre={`${dossiers.length} dossier${dossiers.length > 1 ? "s" : ""} visibles`}
         actions={
-          peut.creerDossier(roles) ? (
+          a(permissions, "dossiers.create") ? (
             <ButtonLink href="/dossiers/nouveau" size="sm">
               Nouveau dossier
             </ButtonLink>

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { z } from "zod"
 
 import { messageErreur, type EtatAction } from "@/lib/actions"
-import { getContexte } from "@/lib/contexte"
+import { autoriser, getContexte } from "@/lib/contexte"
 import type { Enums } from "@/lib/database.types"
 import { dossierSchema, POINTS, verificationSchema } from "@/lib/schemas"
 
@@ -34,6 +34,8 @@ const CHAMPS_F01 = [
 ] as const
 
 export async function creerDossier(_: EtatAction, fd: FormData): Promise<EtatAction> {
+  const garde = await autoriser("dossiers.create")
+  if (garde.refus) return garde.refus
   const parsed = dossierSchema.safeParse({
     ...Object.fromEntries(CHAMPS_F01.map((k) => [k, fd.get(k) ?? undefined])),
     nouveau_client: fd.get("nouveau_client") === "1",
@@ -119,6 +121,8 @@ export async function changerStatut(
   statut: Enums<"dossier_statut">,
   motif?: string | null
 ): Promise<EtatAction> {
+  const garde = await autoriser("dossiers.verify", "dossiers.decide")
+  if (garde.refus) return garde.refus
   const { supabase } = await getContexte()
   const { error } = await supabase.rpc("change_dossier_status", {
     p_dossier_id: dossierId,
@@ -137,6 +141,8 @@ export async function enregistrerVerification(
   _: EtatAction,
   fd: FormData
 ): Promise<EtatAction> {
+  const garde = await autoriser("dossiers.verify")
+  if (garde.refus) return garde.refus
   const brut: Record<string, FormDataEntryValue | null> = {}
   for (const p of POINTS) {
     brut[p] = fd.get(p)
@@ -168,6 +174,8 @@ export async function validerVerification(
   dossierId: string,
   verificationId: string
 ): Promise<EtatAction> {
+  const garde = await autoriser("dossiers.decide")
+  if (garde.refus) return garde.refus
   const { supabase } = await getContexte()
   const { error } = await supabase.rpc("valider_verification", {
     p_verification_id: verificationId,
@@ -179,6 +187,8 @@ export async function validerVerification(
 }
 
 export async function affecter(dossierId: string, userId: string): Promise<EtatAction> {
+  const garde = await autoriser("dossiers.verify")
+  if (garde.refus) return garde.refus
   const { supabase, organisation } = await getContexte()
   const { error } = await supabase
     .from("dossier_affectations")
@@ -189,6 +199,8 @@ export async function affecter(dossierId: string, userId: string): Promise<EtatA
 }
 
 export async function retirerAffectation(dossierId: string, affectationId: string): Promise<EtatAction> {
+  const garde = await autoriser("dossiers.verify")
+  if (garde.refus) return garde.refus
   const { supabase } = await getContexte()
   const { error } = await supabase.from("dossier_affectations").delete().eq("id", affectationId)
   if (error) return { message: messageErreur(error) }

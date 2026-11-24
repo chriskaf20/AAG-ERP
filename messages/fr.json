@@ -14,7 +14,16 @@
     "parametres": "Paramètres",
     "deconnexion": "Se déconnecter",
     "changerOrganisation": "Changer d'organisation",
-    "theme": "Thème clair / sombre"
+    "theme": "Thème clair / sombre",
+    "devis": "Devis",
+    "factures": "Factures",
+    "paiements": "Paiements",
+    "finance": "Finance (DAF)",
+    "services": "Services",
+    "missions": "Mes missions",
+    "rapports": "Rapports",
+    "audit": "Journal d'audit",
+    "profil": "Mon profil"
   },
   "common": {
     "enregistrer": "Enregistrer",
@@ -88,7 +97,12 @@
     "accuse_reception": "Accusé de réception",
     "fiche_ouverture": "Fiche d'ouverture (F-01)",
     "fiche_verification": "Fiche de vérification (F-02)",
-    "autre": "Autre"
+    "autre": "Autre",
+    "devis": "Devis signé",
+    "facture": "Facture",
+    "contrat": "Contrat",
+    "pv_lancement": "PV de lancement F-04",
+    "recu": "Reçu"
   },
   "clientTypes": {
     "entreprise": "Entreprise",
@@ -110,5 +124,60 @@
       "complement_requis": "Complément requis",
       "refuse": "Refuser"
     }
+  },
+  "devisStatuts": {
+    "brouillon": "Brouillon",
+    "valide": "Validé",
+    "envoye": "Envoyé",
+    "signe": "Signé",
+    "refuse": "Refusé",
+    "expire": "Expiré",
+    "remplace": "Remplacé"
+  },
+  "factureStatuts": {
+    "brouillon": "Brouillon",
+    "emise": "Émise",
+    "normalisee": "Normalisée",
+    "partiellement_payee": "Partiellement payée",
+    "payee": "Payée",
+    "en_retard": "En retard",
+    "annulee": "Annulée"
+  },
+  "factureTypes": {
+    "acompte": "Acompte",
+    "solde": "Solde",
+    "mensuelle": "Mensuelle"
+  },
+  "modesPaiement": {
+    "banque": "Banque",
+    "mpesa": "M-Pesa",
+    "airtel_money": "Airtel Money",
+    "orange_money": "Orange Money",
+    "especes": "Espèces"
+  },
+  "unites": {
+    "forfait": "Forfait",
+    "jour": "Jour",
+    "mois": "Mois",
+    "m2": "m²",
+    "course": "Course"
+  },
+  "contratStatuts": {
+    "brouillon": "Brouillon",
+    "signe": "Signé",
+    "resilie": "Résilié"
+  },
+  "pv": {
+    "perimetre_confirme": "Périmètre des prestations confirmé",
+    "planning_confirme": "Planning et date de démarrage confirmés",
+    "interlocuteurs_confirmes": "Interlocuteurs désignés des deux côtés",
+    "livrables_confirmes": "Livrables et critères de réception confirmés",
+    "acces_site_confirme": "Accès au site et logistique confirmés",
+    "acompte_confirme": "Acompte encaissé"
+  },
+  "relanceNiveaux": {
+    "j7": "J+7",
+    "j15": "J+15",
+    "j30": "J+30"
   }
 }

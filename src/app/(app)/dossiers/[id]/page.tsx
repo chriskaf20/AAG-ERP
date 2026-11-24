@@ -11,33 +11,41 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getContexte } from "@/lib/contexte"
+import { exiger } from "@/lib/contexte"
 import { formatDate, formatDateHeure, formatMontant } from "@/lib/format"
 import { membresOrganisation } from "@/lib/membres"
-import { peut, transitionsManuelles } from "@/lib/permissions"
+import { LECTURE_DOSSIERS, transitionsManuelles, type DroitsDossier } from "@/lib/permissions"
 import { ActionsStatut } from "./actions-statut"
 import { Affectations } from "./affectations"
 import { VerificationF02 } from "./verification-f02"
+import { Contrats, PvLancement } from "./contrats-pv"
+import { chargerFinanceDossier } from "./finance-donnees"
+import { OngletDevis } from "./onglet-devis"
+import { OngletFactures } from "./onglet-factures"
 
 export const metadata: Metadata = { title: "Dossier" }
 
-const ONGLETS = ["resume", "client", "verification", "documents", "historique"] as const
+const ONGLETS = ["resume", "client", "verification", "devis", "factures", "documents", "historique"] as const
 
 export default async function FicheDossier({ params, searchParams }: PageProps<"/dossiers/[id]">) {
   const { id } = await params
   const { onglet } = await searchParams
-  const ctx = await getContexte()
-  const { supabase, roles, userId, organisation } = ctx
+  const ctx = await exiger(...LECTURE_DOSSIERS, "dossiers.read_assigned")
+  const { supabase, organisation } = ctx
   const t = await getTranslations()
 
-  const { data: d } = await supabase
+  const [{ data: droitsBruts }, { data: d }] = await Promise.all([
+    supabase.rpc("droits_dossier", { p_dossier: id }),
+    supabase
     .from("dossiers")
     .select(
       "*, clients(*), contacts(*), departments(code, nom), profiles!dossiers_responsable_id_fkey(nom_complet)"
     )
     .eq("id", id)
-    .maybeSingle()
+    .maybeSingle(),
+  ])
   if (!d) notFound()
+  const droits = droitsBruts as unknown as DroitsDossier
 
   const [
     { data: verifications },
@@ -68,12 +76,9 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
 
   const nom = (uid: string | null) => membres.find((m) => m.id === uid)?.nom ?? "—"
 
-  const pilote =
-    peut.direction(roles) ||
-    (roles.includes("responsable_departement") && ctx.departements.includes(d.department_id)) ||
-    d.responsable_id === userId
-
-  const transitions = transitionsManuelles(d.statut, roles, pilote)
+  const pilote = droits.verify
+  const transitions = transitionsManuelles(d.statut, droits)
+  const fin = droits.devis_read || droits.factures_read ? await chargerFinanceDossier(ctx, d.id) : null
   const enrichir = <T extends { verifie_par: string | null; valide_par: string | null }>(v: T) => ({
     ...v,
     verificateur: v.verifie_par ? nom(v.verifie_par) : null,
@@ -120,10 +125,12 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
               <TabsTrigger value="client">Client et pièces</TabsTrigger>
               <TabsTrigger value="verification">
                 Vérification
-                {brouillon?.decision && peut.decider(roles) && (
+                {brouillon?.decision && droits.decide && (
                   <span className="ml-1 size-2 rounded-full bg-accent" aria-label="à valider" />
                 )}
               </TabsTrigger>
+              {droits.devis_read && <TabsTrigger value="devis">Devis et contrat</TabsTrigger>}
+              {droits.factures_read && <TabsTrigger value="factures">Factures et paiements</TabsTrigger>}
               <TabsTrigger value="documents">Documents</TabsTrigger>
               <TabsTrigger value="historique">Historique</TabsTrigger>
             </TabsList>
@@ -226,7 +233,7 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
                     : ["rccm", "nif", "id_nat", "piece_identite", "autre"]
                 }
                 documents={piecesClient ?? []}
-                peutEcrire={peut.ecrireClients(roles)}
+                peutEcrire={droits.clients_write}
               />
             </TabsContent>
 
@@ -237,10 +244,46 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
                 brouillon={brouillon ? enrichir(brouillon) : null}
                 validees={validees}
                 peutRemplir={pilote}
-                peutValider={peut.decider(roles)}
+                peutValider={droits.decide}
               />
             </TabsContent>
 
+            {fin && droits.devis_read && (
+              <TabsContent value="devis" className="flex flex-col gap-4 pt-4">
+                <OngletDevis
+                  dossierId={d.id}
+                  peutCreer={["accepte", "devis_envoye", "en_lancement", "en_cours", "livre", "reserves"].includes(d.statut)}
+                  devis={fin.devis}
+                  services={fin.services}
+                  droits={droits}
+                  seuilUsd={fin.seuilUsd}
+                  emailClient={d.contacts?.email ?? d.clients?.email ?? null}
+                />
+                <PvLancement
+                  key={fin.pv?.id ?? "nouveau"}
+                  dossierId={d.id}
+                  pv={fin.pv}
+                  signatures={fin.pvSignatures}
+                  devisSignes={fin.devisSignes}
+                  pilote={droits.devis_write}
+                  emailClient={d.contacts?.email ?? d.clients?.email ?? null}
+                  disponible={fin.devisSignes.length > 0}
+                />
+                <Contrats dossierId={d.id} contrats={fin.contrats} devisSignes={fin.devisSignes} pilote={droits.devis_write} />
+              </TabsContent>
+            )}
+            {fin && droits.factures_read && (
+              <TabsContent value="factures" className="pt-4">
+                <OngletFactures
+                  dossierId={d.id}
+                  factures={fin.factures}
+                  devisSignes={fin.devisSignes}
+                  services={fin.services}
+                  droits={droits}
+                  relances={fin.relances}
+                />
+              </TabsContent>
+            )}
             <TabsContent value="documents" className="pt-4">
               <PiecesManager
                 titre="Documents du dossier"

@@ -6,6 +6,12 @@ set local search_path = public, extensions;
 
 select plan(17);
 
+-- État de référence du seed (indépendant des données de scénario)
+update public.dossiers set responsable_id = '10000000-0000-4000-8000-000000000009'
+ where id = 'f0000000-0000-4000-8000-000000000005';
+update public.dossiers set responsable_id = '10000000-0000-4000-8000-000000000007'
+ where id = 'f0000000-0000-4000-8000-000000000010';
+
 -- ---------------------------------------------------------------------------
 -- agent_terrain : ne voit que les dossiers qui lui sont affectés
 -- ---------------------------------------------------------------------------

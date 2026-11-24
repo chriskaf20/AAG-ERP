@@ -1,0 +1,62 @@
+import assert from "node:assert/strict"
+import { test } from "node:test"
+
+import { a, permissionsDe, PERMISSIONS, ROLE_PERMISSIONS, ROLES, transitionsManuelles } from "../src/lib/permissions"
+
+test("chaque permission de la matrice existe", () => {
+  for (const r of ROLES) for (const p of ROLE_PERMISSIONS[r]) assert.ok(PERMISSIONS.includes(p), `${r} → ${p}`)
+})
+
+test("admin_systeme : administration uniquement, aucune donnée métier", () => {
+  assert.deepEqual(permissionsDe(["admin_systeme"]), ["admin.users", "admin.settings", "audit.read"])
+})
+
+test("devis.send : gérant et responsable de département uniquement", () => {
+  const avec = ROLES.filter((r) => ROLE_PERMISSIONS[r].includes("devis.send"))
+  assert.deepEqual(avec, ["gerant", "responsable_departement"])
+})
+
+test("décision et validation : gérant uniquement", () => {
+  for (const perm of ["dossiers.decide", "devis.validate"] as const) {
+    assert.deepEqual(ROLES.filter((r) => ROLE_PERMISSIONS[r].includes(perm)), ["gerant"])
+  }
+})
+
+test("agent terrain : dossiers affectés uniquement ; client : rien", () => {
+  assert.deepEqual(permissionsDe(["agent_terrain"]), ["dossiers.read_assigned"])
+  assert.deepEqual(permissionsDe(["client"]), [])
+})
+
+test("associé : rapports et marges agrégées, aucun dossier", () => {
+  assert.deepEqual(permissionsDe(["associe"]), ["marges.read", "reports.read"])
+})
+
+test("DAF : lit tous les dossiers sans les modifier", () => {
+  const p = permissionsDe(["daf"])
+  assert.ok(a(p, "dossiers.read_all") && a(p, "paiements.write") && a(p, "normalisation.write"))
+  assert.ok(!a(p, "dossiers.create") && !a(p, "dossiers.verify") && !a(p, "devis.write"))
+})
+
+test("union multi-rôle : responsable de dossier + acheteur", () => {
+  const p = permissionsDe(["responsable_dossier", "acheteur"])
+  assert.equal(p.length, 10)
+  assert.ok(a(p, "dossiers.read_own") && a(p, "dossiers.read_dept"))
+  assert.ok(!a(p, "devis.send"))
+})
+
+test("union multi-rôle : gérant + admin_systeme = permissions du gérant", () => {
+  assert.deepEqual(permissionsDe(["gerant", "admin_systeme"]), permissionsDe(["gerant"]))
+  assert.equal(permissionsDe(["gerant", "admin_systeme"]).length, 20)
+})
+
+test("union : ordre stable et sans doublon", () => {
+  const p = permissionsDe(["acheteur", "responsable_dossier", "acheteur"])
+  assert.equal(new Set(p).size, p.length)
+  assert.deepEqual(p, PERMISSIONS.filter((x) => p.includes(x)))
+})
+
+test("transitions manuelles selon les droits sur le dossier", () => {
+  assert.deepEqual(transitionsManuelles("nouveau", { verify: true, decide: false }), ["en_verification"])
+  assert.deepEqual(transitionsManuelles("nouveau", { verify: false, decide: true }), ["classe_sans_suite"])
+  assert.deepEqual(transitionsManuelles("devis_envoye", { verify: false, decide: false }), [])
+})

@@ -18,7 +18,16 @@ export function FormulaireParametres({
   parametres,
 }: {
   org: Tables<"organizations">
-  parametres: { seuil_validation_usd: number; acompte_pct: number; garantie_jours: number }
+  parametres: {
+    seuil_validation_usd: number
+    acompte_pct: number
+    garantie_jours: number
+    tva_pct: number
+    taux_cdf: number
+    delai_paiement_jours: number
+    devis_validite_jours: number
+    conditions_paiement: string
+  }
 }) {
   const [etat, onSubmit, enCours] = useFormAction(enregistrerParametres)
   const err = etat?.erreurs ?? {}
@@ -86,6 +95,13 @@ export function FormulaireParametres({
             })}
             {champ("acompte_pct", "Acompte (%)", parametres.acompte_pct, { type: "number", min: 0, max: 100 })}
             {champ("garantie_jours", "Garantie (jours)", parametres.garantie_jours, { type: "number", min: 0 })}
+            {champ("tva_pct", "TVA (%)", parametres.tva_pct, { type: "number", min: 0, max: 100, step: "0.01" })}
+            {champ("taux_cdf", "Taux du jour (CDF pour 1 USD)", parametres.taux_cdf, { type: "number", min: 1, step: "0.01" })}
+            {champ("delai_paiement_jours", "Délai de paiement des factures (jours)", parametres.delai_paiement_jours, { type: "number", min: 0 })}
+            {champ("devis_validite_jours", "Validité des devis (jours)", parametres.devis_validite_jours, { type: "number", min: 1 })}
+            <div className="sm:col-span-2">
+              {champ("conditions_paiement", "Conditions de paiement par défaut", parametres.conditions_paiement)}
+            </div>
           </FieldGroup>
         </CardContent>
       </Card>

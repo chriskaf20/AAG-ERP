@@ -2,6 +2,23 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import {
+  BanknoteIcon,
+  BarChart3Icon,
+  ClipboardListIcon,
+  HistoryIcon,
+  Building2Icon,
+  FilePlus2Icon,
+  FileSignatureIcon,
+  FolderKanbanIcon,
+  LandmarkIcon,
+  LayoutDashboardIcon,
+  PackageIcon,
+  ReceiptTextIcon,
+  Settings2Icon,
+  ShieldCheckIcon,
+  UsersIcon,
+} from "lucide-react"
 
 import {
   SidebarGroup,
@@ -12,8 +29,25 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-export type NavItem = { titre: string; url: string; icone: React.ReactNode }
-export type NavGroupe = { titre: string; items: NavItem[] }
+import type { IconeNav, NavGroupe } from "@/lib/navigation"
+
+const ICONES: Record<IconeNav, React.ComponentType> = {
+  tableau: LayoutDashboardIcon,
+  missions: ClipboardListIcon,
+  rapports: BarChart3Icon,
+  audit: HistoryIcon,
+  dossiers: FolderKanbanIcon,
+  nouveau: FilePlus2Icon,
+  clients: Building2Icon,
+  finance: LandmarkIcon,
+  devis: FileSignatureIcon,
+  factures: ReceiptTextIcon,
+  paiements: BanknoteIcon,
+  services: PackageIcon,
+  utilisateurs: UsersIcon,
+  roles: ShieldCheckIcon,
+  parametres: Settings2Icon,
+}
 
 export function NavMain({ groupes }: { groupes: NavGroupe[] }) {
   const pathname = usePathname()
@@ -31,7 +65,9 @@ export function NavMain({ groupes }: { groupes: NavGroupe[] }) {
         <SidebarGroup key={groupe.titre}>
           <SidebarGroupLabel>{groupe.titre}</SidebarGroupLabel>
           <SidebarMenu>
-            {groupe.items.map((item) => (
+            {groupe.items.map((item) => {
+              const Icone = ICONES[item.icone]
+              return (
               <SidebarMenuItem key={item.url}>
                 <SidebarMenuButton
                   tooltip={item.titre}
@@ -44,11 +80,12 @@ export function NavMain({ groupes }: { groupes: NavGroupe[] }) {
                     />
                   }
                 >
-                  {item.icone}
+                  <Icone />
                   <span>{item.titre}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            ))}
+              )
+            })}
           </SidebarMenu>
         </SidebarGroup>
       ))}

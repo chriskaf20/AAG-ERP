@@ -154,4 +154,9 @@ export const organisationSchema = z.object({
   seuil_validation_usd: z.coerce.number().min(0, "Montant positif"),
   acompte_pct: z.coerce.number().min(0).max(100, "Entre 0 et 100"),
   garantie_jours: z.coerce.number().int().min(0, "Nombre de jours positif"),
+  tva_pct: z.coerce.number().min(0).max(100, "Entre 0 et 100"),
+  taux_cdf: z.coerce.number().positive("Taux invalide"),
+  delai_paiement_jours: z.coerce.number().int().min(0, "Nombre de jours positif"),
+  devis_validite_jours: z.coerce.number().int().min(1, "Au moins 1 jour"),
+  conditions_paiement: optionnel,
 })

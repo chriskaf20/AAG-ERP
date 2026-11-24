@@ -1,0 +1,2 @@
+/** Applique le thème avant l'hydratation (évite le flash) : clé localStorage « theme » = light | dark | system. */
+export const SCRIPT_THEME = `(function(){try{var t=localStorage.getItem("theme")||"system";var d=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);var e=document.documentElement;e.classList.toggle("dark",d);e.style.colorScheme=d?"dark":"light"}catch(_){}})()`

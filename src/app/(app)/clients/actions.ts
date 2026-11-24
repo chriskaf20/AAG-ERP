@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { z } from "zod"
 
 import { messageErreur, type EtatAction } from "@/lib/actions"
-import { getContexte } from "@/lib/contexte"
+import { autoriser, getContexte } from "@/lib/contexte"
 import { clientSchema, contactSchema } from "@/lib/schemas"
 
 const CHAMPS_CLIENT = [
@@ -26,6 +26,8 @@ function lireClient(fd: FormData) {
 }
 
 export async function creerClient(_: EtatAction, fd: FormData): Promise<EtatAction> {
+  const garde = await autoriser("clients.write")
+  if (garde.refus) return garde.refus
   const parsed = lireClient(fd)
   if (!parsed.success) return { erreurs: z.flattenError(parsed.error).fieldErrors }
 
@@ -42,6 +44,8 @@ export async function creerClient(_: EtatAction, fd: FormData): Promise<EtatActi
 }
 
 export async function modifierClient(id: string, _: EtatAction, fd: FormData): Promise<EtatAction> {
+  const garde = await autoriser("clients.write")
+  if (garde.refus) return garde.refus
   const parsed = lireClient(fd)
   if (!parsed.success) return { erreurs: z.flattenError(parsed.error).fieldErrors }
 
@@ -73,6 +77,8 @@ export async function enregistrerContact(
   _: EtatAction,
   fd: FormData
 ): Promise<EtatAction> {
+  const garde = await autoriser("clients.write")
+  if (garde.refus) return garde.refus
   const parsed = lireContact(fd)
   if (!parsed.success) return { erreurs: z.flattenError(parsed.error).fieldErrors }
 
@@ -89,6 +95,8 @@ export async function enregistrerContact(
 }
 
 export async function supprimerContact(clientId: string, contactId: string): Promise<EtatAction> {
+  const garde = await autoriser("clients.write")
+  if (garde.refus) return garde.refus
   const { supabase } = await getContexte()
   const { error } = await supabase.from("contacts").delete().eq("id", contactId)
   if (error) return { message: messageErreur(error) }

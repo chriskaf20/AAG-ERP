@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 import { messageErreur, type EtatAction } from "@/lib/actions"
-import { getContexte } from "@/lib/contexte"
+import { autoriser, getContexte } from "@/lib/contexte"
 
 const schema = z.object({
   bucket: z.enum(["dossiers", "clients"]),
@@ -18,6 +18,11 @@ const schema = z.object({
     "fiche_ouverture",
     "fiche_verification",
     "autre",
+    "devis",
+    "facture",
+    "contrat",
+    "pv_lancement",
+    "recu",
   ]),
   libelle: z.string().trim().max(200).nullable(),
   nom_fichier: z.string().min(1).max(255),
@@ -35,6 +40,8 @@ export type NouveauDocument = z.input<typeof schema>
  * directement depuis le navigateur, sous contrôle des politiques Storage).
  */
 export async function enregistrerDocument(doc: NouveauDocument): Promise<EtatAction> {
+  const garde = await autoriser("dossiers.verify", "clients.write", "devis.write")
+  if (garde.refus) return garde.refus
   const parsed = schema.safeParse(doc)
   if (!parsed.success) return { message: "Document invalide" }
 

@@ -8,9 +8,9 @@ import { SiteHeader } from "@/components/site-header"
 import { StatutBadge } from "@/components/statut-badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getContexte } from "@/lib/contexte"
+import { exiger } from "@/lib/contexte"
 import { formatDate } from "@/lib/format"
-import { peut } from "@/lib/permissions"
+import { a } from "@/lib/permissions"
 import { modifierClient } from "../actions"
 import { ClientForm } from "../client-form"
 import { Contacts } from "./contacts"
@@ -19,7 +19,7 @@ export const metadata: Metadata = { title: "Fiche client" }
 
 export default async function FicheClient({ params }: PageProps<"/clients/[id]">) {
   const { id } = await params
-  const { supabase, roles, organisation } = await getContexte()
+  const { supabase, permissions, organisation } = await exiger("clients.read")
 
   const [{ data: client }, { data: contacts }, { data: documents }, { data: dossiers }] =
     await Promise.all([
@@ -38,7 +38,7 @@ export default async function FicheClient({ params }: PageProps<"/clients/[id]">
     ])
 
   if (!client) notFound()
-  const ecriture = peut.ecrireClients(roles)
+  const ecriture = a(permissions, "clients.write")
 
   return (
     <>
