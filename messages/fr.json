@@ -1,0 +1,114 @@
+{
+  "app": {
+    "nom": "Atlas ERP",
+    "societe": "Atlas Africa Group"
+  },
+  "nav": {
+    "tableauDeBord": "Tableau de bord",
+    "dossiers": "Dossiers",
+    "nouveauDossier": "Nouveau dossier",
+    "clients": "Clients",
+    "administration": "Administration",
+    "utilisateurs": "Utilisateurs",
+    "roles": "Rôles",
+    "parametres": "Paramètres",
+    "deconnexion": "Se déconnecter",
+    "changerOrganisation": "Changer d'organisation",
+    "theme": "Thème clair / sombre"
+  },
+  "common": {
+    "enregistrer": "Enregistrer",
+    "annuler": "Annuler",
+    "ajouter": "Ajouter",
+    "modifier": "Modifier",
+    "supprimer": "Supprimer",
+    "rechercher": "Rechercher…",
+    "aucunResultat": "Aucun résultat.",
+    "oui": "Oui",
+    "non": "Non",
+    "tous": "Tous",
+    "chargement": "Chargement…",
+    "telecharger": "Télécharger",
+    "voir": "Voir",
+    "liste": "Liste",
+    "kanban": "Kanban",
+    "page": "Page {page} sur {total}",
+    "precedent": "Page précédente",
+    "suivant": "Page suivante",
+    "erreur": "Une erreur est survenue"
+  },
+  "statuts": {
+    "nouveau": "Nouveau",
+    "en_verification": "En vérification",
+    "complement_requis": "Complément requis",
+    "accepte": "Accepté",
+    "devis_envoye": "Devis envoyé",
+    "en_lancement": "En lancement",
+    "en_cours": "En cours",
+    "livre": "Livré",
+    "reserves": "Réserves",
+    "receptionne_a_facturer": "Réceptionné à facturer",
+    "cloture": "Clôturé",
+    "refuse": "Refusé",
+    "classe_sans_suite": "Classé sans suite"
+  },
+  "roles": {
+    "admin_systeme": "Administrateur système",
+    "gerant": "Gérant",
+    "associe": "Associé",
+    "directeur_commercial": "Directeur commercial",
+    "directeur_operations": "Directeur des opérations",
+    "daf": "DAF",
+    "responsable_departement": "Responsable de département",
+    "responsable_dossier": "Responsable de dossier",
+    "acheteur": "Acheteur",
+    "responsable_rh": "Responsable RH",
+    "agent_terrain": "Agent terrain",
+    "client": "Client (portail)"
+  },
+  "canaux": {
+    "visite": "Visite",
+    "appel": "Appel",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "site_web": "Site web"
+  },
+  "pieces": {
+    "rccm": "RCCM",
+    "id_nat": "Id. Nat.",
+    "nif": "NIF",
+    "piece_identite": "Pièce d'identité du signataire",
+    "autre": "Autres"
+  },
+  "documents": {
+    "rccm": "RCCM",
+    "id_nat": "Id. Nat.",
+    "nif": "NIF",
+    "piece_identite": "Pièce d'identité",
+    "accuse_reception": "Accusé de réception",
+    "fiche_ouverture": "Fiche d'ouverture (F-01)",
+    "fiche_verification": "Fiche de vérification (F-02)",
+    "autre": "Autre"
+  },
+  "clientTypes": {
+    "entreprise": "Entreprise",
+    "particulier": "Particulier"
+  },
+  "verification": {
+    "identite_verifiee": "Identité du client vérifiée",
+    "documents_valides": "Documents valides et non modifiés",
+    "coordonnees_confirmees": "Adresse et téléphone confirmés",
+    "signataire_habilite": "Signataire habilité à engager l'entreprise",
+    "activite_legale": "Activité légale, autorisations disponibles",
+    "capacite_atlas": "Capacité d'Atlas (moyens, partenaires)",
+    "capacite_paiement": "Capacité de paiement / acompte prévu",
+    "absence_conflit": "Absence de conflit d'intérêts",
+    "conforme": "Conforme",
+    "nonConforme": "Non conforme",
+    "decisions": {
+      "accepte": "Accepter",
+      "complement_requis": "Complément requis",
+      "refuse": "Refuser"
+    }
+  }
+}
