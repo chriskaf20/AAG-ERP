@@ -5,20 +5,21 @@ import { z } from "zod"
 import { messageErreur, texte } from "@/lib/actions"
 import { autoriser } from "@/lib/contexte"
 
-const ligne = z.object({ description: z.string().trim().min(1).max(500), quantite: z.coerce.number().positive(), prix_unitaire: z.coerce.number().min(0) })
+const ligne = z.object({ article_id: z.uuid().nullable(), description: z.string().trim().min(1).max(500), quantite: z.coerce.number().positive(), prix_unitaire: z.coerce.number().min(0) })
 
 export async function enregistrerCommande(id: string | null, fd: FormData) {
   const { ctx, refus } = await autoriser("achats.write")
   if (refus) return refus
   const quantites = fd.getAll("quantite")
   const prix = fd.getAll("prix_unitaire")
+  const articles = fd.getAll("article_id")
   const saisie = z.object({
     id: z.uuid().nullable(), fournisseur: z.uuid(), departement: z.uuid(), dossier: z.uuid().nullable(),
     objet: z.string().trim().min(1).max(300), devise: z.enum(["USD", "CDF"]), lignes: z.array(ligne).min(1),
   }).safeParse({
     id, fournisseur: texte(fd, "fournisseur"), departement: texte(fd, "departement"), dossier: texte(fd, "dossier"),
     objet: texte(fd, "objet"), devise: fd.get("devise"),
-    lignes: fd.getAll("description").map((description, i) => ({ description, quantite: quantites[i], prix_unitaire: prix[i] })),
+    lignes: fd.getAll("description").map((description, i) => ({ description, quantite: quantites[i], prix_unitaire: prix[i], article_id: articles[i] || null })),
   })
   if (!saisie.success) return { message: "Vérifiez le fournisseur, le département, l’objet et les lignes." }
 
@@ -52,19 +53,20 @@ export async function receptionnerCommande(id: string, operation: string, fd: Fo
   const quantites = [...fd.entries()].filter(([cle, valeur]) => cle.startsWith("recu-") && valeur !== "")
     .map(([cle, valeur]) => ({ ligne_id: cle.slice(5), quantite: valeur }))
   const saisie = z.object({
-    id: z.uuid(), operation: z.uuid(), date: z.iso.date(),
+    id: z.uuid(), operation: z.uuid(), date: z.iso.date(), emplacement: z.uuid().nullable(),
     lignes: z.array(z.object({ ligne_id: z.uuid(), quantite: z.coerce.number().min(0) })).min(1),
-  }).safeParse({ id, operation, date: fd.get("date_reception"), lignes: quantites })
+  }).safeParse({ id, operation, date: fd.get("date_reception"), emplacement: texte(fd, "emplacement"), lignes: quantites })
   if (!saisie.success) return { message: "Vérifiez la date et les quantités reçues." }
   const lignes = saisie.data.lignes.filter(l => l.quantite > 0)
   if (!lignes.length) return { message: "Saisissez au moins une quantité reçue." }
 
   const { error } = await ctx.supabase.rpc("receptionner_achat", {
     p_org: ctx.organisation.id, p_bon: saisie.data.id, p_operation: saisie.data.operation,
-    p_date: saisie.data.date, p_reference: texte(fd, "reference"), p_observations: texte(fd, "observations"), p_lignes: lignes,
+    p_date: saisie.data.date, p_emplacement: saisie.data.emplacement ?? undefined, p_reference: texte(fd, "reference"), p_observations: texte(fd, "observations"), p_lignes: lignes,
   })
   if (error) return { message: messageErreur(error) }
   revalidatePath("/achats")
+  revalidatePath("/stock")
   return { ok: true, message: "Réception enregistrée" }
 }
 

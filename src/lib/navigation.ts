@@ -13,6 +13,7 @@ export type IconeNav =
   | "clients"
   | "finance"
   | "fournisseurs"
+  | "stock"
   | "bons-commande"
   | "devis"
   | "factures"
@@ -68,6 +69,7 @@ export async function menuNavigation(perms: readonly Permission[]): Promise<NavG
       items: [
         { titre: t("bonsCommande"), url: "/achats", icone: "bons-commande", permis: ["achats.read"] },
         { titre: t("fournisseurs"), url: "/fournisseurs", icone: "fournisseurs", permis: LECTURE_FOURNISSEURS },
+        { titre: "Stock", url: "/stock", icone: "stock", permis: ["achats.read", "achats.write"] },
       ],
     },
     {

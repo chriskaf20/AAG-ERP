@@ -12,7 +12,7 @@ export default async function Achats() {
   const { supabase, organisation, permissions, roles, departements, departementsOrg, userId } = ctx
   const gestion = permissions.includes("achats.write")
   const porteeGlobale = roles.includes("gerant") || roles.includes("directeur_operations")
-  const [commandes, lignes, receptions, quantites, fournisseurs, dossiers, acheteur] = await Promise.all([
+  const [commandes, lignes, receptions, quantites, fournisseurs, dossiers, acheteur, articles, emplacements] = await Promise.all([
     supabase.from("bons_commande").select("*").eq("organization_id", organisation.id).order("created_at", { ascending: false }),
     supabase.from("bon_commande_lignes").select("*").eq("organization_id", organisation.id).order("ordre"),
     supabase.from("receptions_achat").select("*").eq("organization_id", organisation.id).order("created_at"),
@@ -21,8 +21,10 @@ export default async function Achats() {
     supabase.from("dossiers").select("id, numero, department_id").eq("organization_id", organisation.id).order("numero"),
     gestion && !porteeGlobale ? supabase.from("user_roles").select("department_id")
       .eq("organization_id", organisation.id).eq("user_id", userId).eq("role", "acheteur") : null,
+    supabase.from("stock_articles").select("id, code, nom, unite").eq("organization_id", organisation.id).order("code"),
+    supabase.from("stock_emplacements").select("id, nom, par_defaut").eq("organization_id", organisation.id).order("nom"),
   ])
-  for (const resultat of [commandes, lignes, receptions, quantites, fournisseurs, dossiers, acheteur]) if (resultat?.error) throw resultat.error
+  for (const resultat of [commandes, lignes, receptions, quantites, fournisseurs, dossiers, acheteur, articles, emplacements]) if (resultat?.error) throw resultat.error
   const departementsVisibles = !gestion || porteeGlobale ? departementsOrg : departementsOrg.filter(d =>
     departements.includes(d.id) && acheteur?.data?.some(r => r.department_id === d.id))
   return <>
@@ -33,7 +35,7 @@ export default async function Achats() {
         receptions: (receptions.data ?? []).filter(r => r.bon_id === b.id)
           .map(r => ({ ...r, lignes: (quantites.data ?? []).filter(l => l.reception_id === r.id) })),
       }))}
-      choix={{ fournisseurs: fournisseurs.data ?? [], departements: departementsVisibles, dossiers: dossiers.data ?? [] }}
+      choix={{ articles: articles.data ?? [], emplacements: emplacements.data ?? [], fournisseurs: fournisseurs.data ?? [], departements: departementsVisibles, dossiers: dossiers.data ?? [] }}
       gestion={gestion} validation={permissions.includes("achats.validate")} /></Section></PageBody>
   </>
 }

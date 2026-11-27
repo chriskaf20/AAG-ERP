@@ -8,18 +8,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { formatDateHeure, formatMontant } from "@/lib/format"
-import { STATUTS_BON, type BonCommande } from "@/lib/achats"
+import { STATUTS_BON, type ArticleStock, type BonCommande, type EmplacementStock } from "@/lib/achats"
 import { avancerCommande, enregistrerCommande, remplacerCommande } from "./actions"
 import { ReceptionsCommande } from "./receptions"
 
 type Choix = {
+  articles: ArticleStock[]
+  emplacements: EmplacementStock[]
   fournisseurs: { id: string; nom: string; actif: boolean }[]
   departements: { id: string; nom: string }[]
   dossiers: { id: string; numero: string; department_id: string }[]
 }
 
-type Ligne = { id: string; description: string; quantite: number | string; prix_unitaire: number | string }
-const vide = { description: "", quantite: 1, prix_unitaire: "" }
+type Ligne = { id: string; article_id: string | null; description: string; quantite: number | string; prix_unitaire: number | string }
+const vide = { article_id: null, description: "", quantite: 1, prix_unitaire: "" }
 
 function FormulaireBon({ choix, bon }: { choix: Choix; bon?: BonCommande }) {
   const estRemplacement = !!bon?.bon_origine_id
@@ -45,8 +47,13 @@ function FormulaireBon({ choix, bon }: { choix: Choix; bon?: BonCommande }) {
     </div>
     {estRemplacement && <><input type="hidden" name="departement" value={departement} />
       <input type="hidden" name="dossier" value={bon.dossier_id ?? ""} /></>}
-    {lignes.map((l, i) => <fieldset key={l.id} className="grid gap-2 rounded-md border p-3 sm:grid-cols-2 lg:grid-cols-4">
+    {lignes.map((l, i) => <fieldset key={l.id} className="grid gap-2 rounded-md border p-3 sm:grid-cols-2 lg:grid-cols-5">
       <legend className="px-1 text-sm">Ligne {i + 1}</legend>
+      <Champ nom="Article de stock"><NativeSelect name="article_id" disabled={estRemplacement} defaultValue={l.article_id ?? ""}>
+        <option value="">Hors stock</option>
+        {choix.articles.map(a => <option key={a.id} value={a.id}>{a.code} · {a.nom} ({a.unite})</option>)}
+      </NativeSelect></Champ>
+      {estRemplacement && <input type="hidden" name="article_id" value={l.article_id ?? ""} />}
       <Champ nom="Description"><Input name="description" required readOnly={estRemplacement} maxLength={500} defaultValue={l.description} /></Champ>
       <Champ nom="Quantité"><Input name="quantite" readOnly={estRemplacement} type="number" min={0.001} step={0.001} required defaultValue={l.quantite} /></Champ>
       <Champ nom="Prix unitaire HT"><Input name="prix_unitaire" type="number" min={0} step={0.01} required defaultValue={l.prix_unitaire} /></Champ>
@@ -90,7 +97,7 @@ export function Commandes({ commandes, choix, gestion, validation }: {
           {bon.motif_annulation && <p>Motif de l’annulation : {bon.motif_annulation}</p>}
           {origine && <a className="underline" href={"#" + origine.id}>Remplace le bon {origine.numero}</a>}
           {remplacement && <a className="underline" href={"#" + remplacement.id}>Bon de remplacement{remplacement.numero ? " " + remplacement.numero : " (brouillon)"}</a>}
-          {bon.emis_le && <ReceptionsCommande bon={bon} ecriture={ecriture} />}
+          {bon.emis_le && <ReceptionsCommande bon={bon} ecriture={ecriture} emplacements={choix.emplacements} />}
           {ecriture && bon.statut === "brouillon" && <details>
             <summary className="cursor-pointer">Modifier le brouillon</summary><div className="pt-3"><FormulaireBon choix={choix} bon={bon} /></div>
           </details>}

@@ -3,14 +3,15 @@
 import { useRef } from "react"
 import { Champ, FormulaireOperation } from "@/components/formulaire-operation"
 import { Input } from "@/components/ui/input"
+import { NativeSelect } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea"
 import { formatDate, FUSEAU_HORAIRE } from "@/lib/format"
-import type { BonCommande } from "@/lib/achats"
+import type { BonCommande, EmplacementStock } from "@/lib/achats"
 import { receptionnerCommande } from "./actions"
 
 const dateLocale = new Intl.DateTimeFormat("sv-SE", { timeZone: FUSEAU_HORAIRE })
 
-export function ReceptionsCommande({ bon, ecriture }: { bon: BonCommande; ecriture: boolean }) {
+export function ReceptionsCommande({ bon, ecriture, emplacements }: { bon: BonCommande; ecriture: boolean; emplacements: EmplacementStock[] }) {
   const operation = useRef<string | null>(null)
   const quantites = new Map<string, number>()
   for (const r of bon.receptions) for (const l of r.lignes) {
@@ -30,7 +31,7 @@ export function ReceptionsCommande({ bon, ecriture }: { bon: BonCommande; ecritu
       {restes.map(l => <li key={l.id}>{l.description} · Reçu {l.recu}/{l.quantite} · {bon.reliquat_annule_le ? "Reliquat annulé" : "Reste"} {l.reste}</li>)}
     </ul>
     {bon.receptions.map(r => <details key={r.id}>
-      <summary className="cursor-pointer">{formatDate(r.date_reception)}{r.reference && " · " + r.reference}</summary>
+      <summary className="cursor-pointer">{formatDate(r.date_reception)}{r.reference && " · " + r.reference}{r.emplacement_id && " · " + (emplacements.find(e => e.id === r.emplacement_id)?.nom ?? "Emplacement")}</summary>
       <ul className="pl-4">
         {r.lignes.map(l => <li key={l.id}>{bon.lignes.find(a => a.id === l.ligne_id)?.description} · {l.quantite}</li>)}
       </ul>
@@ -47,6 +48,10 @@ export function ReceptionsCommande({ bon, ecriture }: { bon: BonCommande; ecritu
         <div className="grid gap-3 sm:grid-cols-2">
           <Champ nom="Date de réception"><Input type="date" name="date_reception" defaultValue={dateLocale.format(new Date())} required /></Champ>
           <Champ nom="Référence du bon de livraison"><Input name="reference" /></Champ>
+          {bon.lignes.some(l => l.article_id) && <Champ nom="Emplacement du stock"><NativeSelect name="emplacement">
+            <option value="">Par défaut</option>
+            {emplacements.map(e => <option key={e.id} value={e.id}>{e.nom}{e.par_defaut ? " (par défaut)" : ""}</option>)}
+          </NativeSelect></Champ>}
           {ouverts.map(l => <Champ key={l.id} nom={l.description + " (reste " + l.reste + ")"}>
             <Input type="number" min={0} max={l.reste} step={0.001} name={"recu-" + l.id} />
           </Champ>)}

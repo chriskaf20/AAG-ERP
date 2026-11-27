@@ -324,6 +324,7 @@ export type Database = {
       }
       bon_commande_lignes: {
         Row: {
+          article_id: string | null
           bon_id: string
           created_at: string
           created_by: string | null
@@ -336,6 +337,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          article_id?: string | null
           bon_id: string
           created_at?: string
           created_by?: string | null
@@ -348,6 +350,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          article_id?: string | null
           bon_id?: string
           created_at?: string
           created_by?: string | null
@@ -360,6 +363,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bon_commande_lignes_article_fk"
+            columns: ["organization_id", "article_id"]
+            isOneToOne: false
+            referencedRelation: "stock_articles"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "bon_commande_lignes_organization_id_bon_id_fkey"
             columns: ["organization_id", "bon_id"]
@@ -382,6 +392,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           date_reception: string
+          emplacement_id: string | null
           id: string
           observations: string | null
           organization_id: string
@@ -393,6 +404,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date_reception: string
+          emplacement_id?: string | null
           id: string
           observations?: string | null
           organization_id: string
@@ -404,6 +416,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date_reception?: string
+          emplacement_id?: string | null
           id?: string
           observations?: string | null
           organization_id?: string
@@ -411,6 +424,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "receptions_achat_emplacement_fk"
+            columns: ["organization_id", "emplacement_id"]
+            isOneToOne: false
+            referencedRelation: "stock_emplacements"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "receptions_achat_organization_id_bon_id_fkey"
             columns: ["organization_id", "bon_id"]
@@ -478,6 +498,211 @@ export type Database = {
           },
           {
             foreignKeyName: "reception_achat_lignes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_articles: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          id: string
+          nom: string
+          organization_id: string
+          unite: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          nom: string
+          organization_id: string
+          unite: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          nom?: string
+          organization_id?: string
+          unite?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_articles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_emplacements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          nom: string
+          organization_id: string
+          par_defaut: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          nom: string
+          organization_id: string
+          par_defaut?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          nom?: string
+          organization_id?: string
+          par_defaut?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_emplacements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_mouvements: {
+        Row: {
+          article_id: string
+          created_at: string
+          created_by: string | null
+          emplacement_id: string
+          id: string
+          motif: string | null
+          organization_id: string
+          quantite: number
+          reception_ligne_id: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          article_id: string
+          created_at?: string
+          created_by?: string | null
+          emplacement_id: string
+          id?: string
+          motif?: string | null
+          organization_id: string
+          quantite: number
+          reception_ligne_id?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          article_id?: string
+          created_at?: string
+          created_by?: string | null
+          emplacement_id?: string
+          id?: string
+          motif?: string | null
+          organization_id?: string
+          quantite?: number
+          reception_ligne_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_mouvements_organization_id_article_id_fkey"
+            columns: ["organization_id", "article_id"]
+            isOneToOne: false
+            referencedRelation: "stock_articles"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_mouvements_organization_id_emplacement_id_fkey"
+            columns: ["organization_id", "emplacement_id"]
+            isOneToOne: false
+            referencedRelation: "stock_emplacements"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_mouvements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_mouvements_reception_ligne_id_fkey"
+            columns: ["reception_ligne_id"]
+            isOneToOne: false
+            referencedRelation: "reception_achat_lignes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_quantites: {
+        Row: {
+          article_id: string
+          created_at: string
+          created_by: string | null
+          emplacement_id: string
+          id: string
+          organization_id: string
+          quantite: number
+          updated_at: string
+        }
+        Insert: {
+          article_id: string
+          created_at?: string
+          created_by?: string | null
+          emplacement_id: string
+          id?: string
+          organization_id: string
+          quantite?: number
+          updated_at?: string
+        }
+        Update: {
+          article_id?: string
+          created_at?: string
+          created_by?: string | null
+          emplacement_id?: string
+          id?: string
+          organization_id?: string
+          quantite?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_quantites_organization_id_article_id_fkey"
+            columns: ["organization_id", "article_id"]
+            isOneToOne: false
+            referencedRelation: "stock_articles"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_quantites_organization_id_emplacement_id_fkey"
+            columns: ["organization_id", "emplacement_id"]
+            isOneToOne: false
+            referencedRelation: "stock_emplacements"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_quantites_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -3375,8 +3600,25 @@ export type Database = {
         Args: { p_bon: string; p_motif: string; p_org: string }
         Returns: string
       }
+      stock_choisir_emplacement_defaut: {
+        Args: { p_emplacement: string; p_org: string }
+        Returns: undefined
+      }
+      stock_mouvement: {
+        Args: { p_article: string; p_emplacement: string; p_motif: string | null; p_operation: string; p_org: string; p_quantite: number; p_type: string }
+        Returns: string
+      }
       receptionner_achat: {
-        Args: { p_org: string; p_bon: string; p_operation: string; p_date: string; p_reference: string | null; p_observations: string | null; p_lignes: Json }
+        Args: {
+          p_org: string
+          p_bon: string
+          p_operation: string
+          p_date: string
+          p_reference: string | null
+          p_observations: string | null
+          p_lignes: Json
+          p_emplacement?: string
+        }
         Returns: string
       }
       enregistrer_bon_commande: {

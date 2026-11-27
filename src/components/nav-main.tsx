@@ -44,6 +44,7 @@ const ICONES: Record<IconeNav, React.ComponentType> = {
   clients: Building2Icon,
   finance: LandmarkIcon,
   fournisseurs: TruckIcon,
+  stock: PackageIcon,
   "bons-commande": ClipboardListIcon,
   devis: FileSignatureIcon,
   factures: ReceiptTextIcon,
