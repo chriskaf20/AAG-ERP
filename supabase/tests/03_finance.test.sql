@@ -187,6 +187,8 @@ select throws_ok($$select public.change_dossier_status('f0000000-0000-4000-8000-
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000006","role":"authenticated"}', true);
 select public.normaliser_facture((select val::uuid from _ctx where cle = 'solde'), 'FN-2026-0002', 'DEF-DEF-456');
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000005","role":"authenticated"}', true);
+insert into public.avis_clients (organization_id, dossier_id, note, commentaire)
+values ('a0000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000009', 5, 'Très satisfait');
 select lives_ok($$select public.change_dossier_status('f0000000-0000-4000-8000-000000000009', 'cloture')$$,
                 'clôture : factures normalisées et soldées');
 

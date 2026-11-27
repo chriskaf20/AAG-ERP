@@ -45,12 +45,12 @@ select pg_temp.en('10000000-0000-4000-8000-000000000014');
 select ok(public.has_permission('a0000000-0000-4000-8000-000000000001', 'admin.users')
           and public.has_permission('a0000000-0000-4000-8000-000000000001', 'dossiers.decide'),
           'gérant + admin : union des permissions');
-select is(cardinality(public.mes_permissions('a0000000-0000-4000-8000-000000000001')), 20,
-          'gérant + admin : 20 permissions distinctes');
+select is(cardinality(public.mes_permissions('a0000000-0000-4000-8000-000000000001')), 24,
+          'gérant + admin : 24 permissions distinctes');
 
 select pg_temp.en('10000000-0000-4000-8000-000000000013');
-select is(cardinality(public.mes_permissions('a0000000-0000-4000-8000-000000000001')), 10,
-          'multi (resp. dossier + acheteur) : union = 10 permissions');
+select is(cardinality(public.mes_permissions('a0000000-0000-4000-8000-000000000001')), 14,
+          'multi (resp. dossier + acheteur) : union = 14 permissions');
 select results_eq($$select numero from public.dossiers order by numero$$,
                   $$values ('AAG-2026-002'::text), ('AAG-2026-005'::text), ('AAG-2026-008'::text), ('AAG-2026-010'::text)$$,
                   'multi : ses dossiers + ceux du département SUP');

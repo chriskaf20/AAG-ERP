@@ -13,7 +13,9 @@ export function SignaturePad({
   onChange: (png: string | null) => void
   label?: string
 }) {
+  const id = React.useId()
   const canvas = React.useRef<HTMLCanvasElement>(null)
+  const trace = React.useRef(false)
   const dessin = React.useRef(false)
   const dernier = React.useRef<{ x: number; y: number } | null>(null)
   const [vide, setVide] = React.useState(true)
@@ -42,12 +44,13 @@ export function SignaturePad({
     if (!dessin.current) return
     dessin.current = false
     dernier.current = null
-    if (!vide) onChange(canvas.current!.toDataURL("image/png"))
+    if (trace.current) onChange(canvas.current!.toDataURL("image/png"))
   }
 
   const effacer = () => {
     const c = canvas.current!
     c.getContext("2d")!.clearRect(0, 0, c.width, c.height)
+    trace.current = false
     setVide(true)
     onChange(null)
   }
@@ -55,7 +58,7 @@ export function SignaturePad({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium" id="signature-label">
+        <span className="text-sm font-medium" id={`${id}-label`}>
           {label}
         </span>
         <Button type="button" variant="ghost" size="sm" onClick={effacer} disabled={vide}>
@@ -65,7 +68,7 @@ export function SignaturePad({
       <canvas
         ref={canvas}
         role="img"
-        aria-labelledby="signature-label signature-aide"
+        aria-labelledby={`${id}-label ${id}-aide`}
         className="h-40 w-full touch-none rounded-lg border-2 border-dashed border-input bg-white"
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId)
@@ -81,12 +84,16 @@ export function SignaturePad({
           ctx.lineTo(p.x, p.y)
           ctx.stroke()
           dernier.current = p
-          if (vide) setVide(false)
+          if (!trace.current) {
+            trace.current = true
+            setVide(false)
+          }
         }}
         onPointerUp={fin}
         onPointerLeave={fin}
+        onPointerCancel={fin}
       />
-      <p id="signature-aide" className="text-xs text-muted-foreground">Dessinez votre signature dans le cadre (souris, doigt ou stylet).</p>
+      <p id={`${id}-aide`} className="text-xs text-muted-foreground">Dessinez votre signature dans le cadre (souris, doigt ou stylet).</p>
     </div>
   )
 }

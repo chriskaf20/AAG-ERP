@@ -4,7 +4,7 @@ import { PageBody, Section } from "@/components/page-body"
 import { SiteHeader } from "@/components/site-header"
 import { exiger } from "@/lib/contexte"
 import { FormulaireParametres } from "./formulaire-parametres"
-import { ParametresRelances } from "./relances"
+import { ParametresEmails } from "./relances"
 
 export const metadata: Metadata = { title: "Paramètres" }
 
@@ -31,9 +31,16 @@ export default async function PageParametres() {
               conditions_paiement: String(p.conditions_paiement ?? ""),
             }}
           />
-          <ParametresRelances
+          <ParametresEmails
+            type="relances"
             actives={p.relances_actives === true}
             mode={p.relances_mode === "reel" ? "reel" : "simulation"}
+            gerant={roles.includes("gerant")}
+          />
+          <ParametresEmails
+            type="points"
+            actives={p.points_avancement_email_actifs === true}
+            mode={p.points_avancement_email_mode === "reel" ? "reel" : "simulation"}
             gerant={roles.includes("gerant")}
           />
         </Section>

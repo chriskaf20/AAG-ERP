@@ -22,10 +22,12 @@ import { Contrats, PvLancement } from "./contrats-pv"
 import { chargerFinanceDossier } from "./finance-donnees"
 import { OngletDevis } from "./onglet-devis"
 import { OngletFactures } from "./onglet-factures"
+import { OngletExecution } from "./onglet-execution"
+import { OngletReception } from "./onglet-reception"
 
 export const metadata: Metadata = { title: "Dossier" }
 
-const ONGLETS = ["resume", "client", "verification", "devis", "factures", "documents", "historique"] as const
+const ONGLETS = ["resume", "client", "verification", "devis", "factures", "execution", "reception", "documents", "historique"] as const
 
 export default async function FicheDossier({ params, searchParams }: PageProps<"/dossiers/[id]">) {
   const { id } = await params
@@ -42,10 +44,12 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
       "*, clients(*), contacts(*), departments(code, nom), profiles!dossiers_responsable_id_fkey(nom_complet)"
     )
     .eq("id", id)
+    .eq("organization_id", organisation.id)
     .maybeSingle(),
   ])
   if (!d) notFound()
   const droits = droitsBruts as unknown as DroitsDossier
+  if (!droits?.voir) notFound()
 
   const [
     { data: verifications },
@@ -73,6 +77,24 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
     supabase.from("dossier_affectations").select("id, user_id").eq("dossier_id", id),
     membresOrganisation(ctx),
   ])
+
+  const [execution, reception] = droits.suivi_read ? await Promise.all([
+    Promise.all([
+      supabase.from("missions").select("*").eq("dossier_id", id).order("debut"),
+      supabase.from("mission_agents").select("*, missions!inner(dossier_id)").eq("missions.dossier_id", id),
+      supabase.from("livrables").select("*").eq("dossier_id", id).order("created_at"),
+      supabase.from("incidents").select("*").eq("dossier_id", id).order("created_at", { ascending: false }),
+      supabase.from("points_avancement").select("*").eq("dossier_id", id).order("date_point", { ascending: false }),
+    ]),
+    Promise.all([
+      supabase.from("pv_reception").select("*").eq("dossier_id", id).order("version", { ascending: false }),
+      supabase.from("pv_reception_lignes").select("*, pv_reception!inner(dossier_id)").eq("pv_reception.dossier_id", id).order("ordre").order("created_at"),
+      supabase.from("reserves").select("*").eq("dossier_id", id).order("created_at"),
+      supabase.from("avis_clients").select("*").eq("dossier_id", id).maybeSingle(),
+    ]),
+  ]) : [null, null]
+  const erreurSuivi = [...(execution ?? []), ...(reception ?? [])].find(r => r.error)?.error
+  if (erreurSuivi) throw erreurSuivi
 
   const nom = (uid: string | null) => membres.find((m) => m.id === uid)?.nom ?? "—"
 
@@ -131,6 +153,8 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
               </TabsTrigger>
               {droits.devis_read && <TabsTrigger value="devis">Devis et contrat</TabsTrigger>}
               {droits.factures_read && <TabsTrigger value="factures">Factures et paiements</TabsTrigger>}
+              {execution && <TabsTrigger value="execution">Exécution</TabsTrigger>}
+              {reception && <TabsTrigger value="reception">Réception</TabsTrigger>}
               <TabsTrigger value="documents">Documents</TabsTrigger>
               <TabsTrigger value="historique">Historique</TabsTrigger>
             </TabsList>
@@ -284,6 +308,16 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
                 />
               </TabsContent>
             )}
+            {execution && <TabsContent value="execution" className="pt-4">
+              <OngletExecution dossier={d} droits={droits} membres={membres}
+                missions={execution[0].data ?? []} equipes={execution[1].data ?? []}
+                livrables={execution[2].data ?? []} incidents={execution[3].data ?? []} points={execution[4].data ?? []} />
+            </TabsContent>}
+            {reception && <TabsContent value="reception" className="pt-4">
+              <OngletReception dossier={d} reception={droits.reception_write} pilote={pilote}
+                pvs={reception[0].data ?? []} lignes={reception[1].data ?? []} reserves={reception[2].data ?? []}
+                avis={reception[3].data} emailClient={d.contacts?.email ?? d.clients?.email ?? null} />
+            </TabsContent>}
             <TabsContent value="documents" className="pt-4">
               <PiecesManager
                 titre="Documents du dossier"

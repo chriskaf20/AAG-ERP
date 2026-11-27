@@ -179,6 +179,7 @@ const contrat = z.object({
   date_debut: z.string().nullable(),
   date_fin: z.string().nullable(),
   montant: z.coerce.number().min(0).nullable(),
+  reception_tacite: z.boolean().optional(),
   devise: z.enum(["USD", "CDF"]),
 })
 

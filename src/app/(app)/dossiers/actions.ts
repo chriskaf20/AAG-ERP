@@ -121,7 +121,7 @@ export async function changerStatut(
   statut: Enums<"dossier_statut">,
   motif?: string | null
 ): Promise<EtatAction> {
-  const garde = await autoriser("dossiers.verify", "dossiers.decide")
+  const garde = await autoriser("dossiers.verify", "dossiers.decide", "execution.write", "reception.write")
   if (garde.refus) return garde.refus
   const { supabase } = await getContexte()
   const { error } = await supabase.rpc("change_dossier_status", {

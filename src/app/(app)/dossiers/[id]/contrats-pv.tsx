@@ -84,6 +84,7 @@ export function Contrats({
               <span className="flex-1 text-sm text-muted-foreground">
                 {c.objet} · {formatDate(c.date_debut)} → {formatDate(c.date_fin)}
                 {c.montant != null && ` · ${formatMontant(c.montant, c.devise)}`}
+                {c.reception_tacite && " · Réception tacite prévue"}
               </span>
               {pilote && c.statut === "brouillon" && (
                 <Button
@@ -139,6 +140,7 @@ export function Contrats({
                     date_fin: (fd.get("date_fin") as string) || null,
                     montant: devis ? devis.total_ttc : Number(fd.get("montant")) || null,
                     devise: devis?.devise ?? "USD",
+                    reception_tacite: fd.get("reception_tacite") === "on",
                   }),
                 () => setOuvert(false)
               )
@@ -173,6 +175,10 @@ export function Contrats({
                   <Input id="ct-fin" name="date_fin" type="date" />
                 </Field>
               </div>
+              <Field orientation="horizontal">
+                <Checkbox id="ct-reception-tacite" name="reception_tacite" />
+                <FieldLabel htmlFor="ct-reception-tacite">Clause de réception tacite prévue au contrat</FieldLabel>
+              </Field>
               <Field>
                 <FieldLabel htmlFor="ct-montant">Montant (si sans devis)</FieldLabel>
                 <Input id="ct-montant" name="montant" type="number" min={0} step="0.01" />

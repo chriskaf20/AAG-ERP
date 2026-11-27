@@ -41,7 +41,7 @@ type Regle = Permission[] | "tous" | "general"
 const PAGES: [string, Regle, boolean][] = [
   // [url, permissions (une suffit), présent dans le menu]
   ["/tableau-de-bord", "general", true],
-  ["/missions", ["dossiers.read_assigned"], true],
+  ["/missions", ["missions.read_assigned", "dossiers.read_assigned"], true],
   ["/dossiers", LECTURE_DOSSIERS, true],
   ["/dossiers/nouveau", ["dossiers.create"], true],
   ["/clients", ["clients.read"], true],
@@ -77,7 +77,7 @@ async function cookie(email: string) {
 let echecs = 0
 for (const [compte, roles] of COMPTES) {
   const perms = permissionsDe(roles)
-  const general = perms.some((p) => p !== "dossiers.read_assigned")
+  const general = perms.some((p) => !["dossiers.read_assigned", "missions.read_assigned", "missions.report"].includes(p))
   const autorise = (r: Regle) => (r === "tous" ? true : r === "general" ? general : aUne(perms, ...r))
   const c = await cookie(`${compte}@atlas-erp.test`)
 

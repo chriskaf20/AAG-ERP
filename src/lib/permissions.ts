@@ -45,6 +45,10 @@ export const PERMISSIONS = [
   "admin.settings",
   "audit.read",
   "reports.read",
+  "missions.read_assigned",
+  "missions.report",
+  "execution.write",
+  "reception.write",
 ] as const
 
 export type Permission = (typeof PERMISSIONS)[number]
@@ -53,9 +57,13 @@ export type Permission = (typeof PERMISSIONS)[number]
  * Matrice rôle → permissions (validée). Elle est aussi en base (role_permissions,
  * migration générée depuis ce fichier) : la base reste l'autorité pour la RLS.
  */
+const PERMISSIONS_MISSION = ["missions.read_assigned", "missions.report"] as const
+const PERMISSIONS_EXECUTION = [...PERMISSIONS_MISSION, "execution.write", "reception.write"] as const
+
 export const ROLE_PERMISSIONS: Record<AppRole, readonly Permission[]> = {
-  admin_systeme: ["admin.users", "admin.settings", "audit.read"],
+  admin_systeme: ["admin.users", "admin.settings", "audit.read", ...PERMISSIONS_MISSION],
   gerant: [
+    ...PERMISSIONS_EXECUTION,
     "dossiers.read_all", "dossiers.create", "dossiers.verify", "dossiers.decide",
     "clients.read", "clients.write",
     "devis.read", "devis.write", "devis.validate", "devis.send",
@@ -63,35 +71,40 @@ export const ROLE_PERMISSIONS: Record<AppRole, readonly Permission[]> = {
     "marges.read", "services.manage",
     "admin.users", "admin.settings", "audit.read", "reports.read",
   ],
-  associe: ["marges.read", "reports.read"],
+  associe: ["marges.read", "reports.read", ...PERMISSIONS_MISSION],
   directeur_commercial: [
+    ...PERMISSIONS_MISSION,
     "dossiers.read_all", "dossiers.create", "dossiers.verify",
     "clients.read", "clients.write", "devis.read", "devis.write",
     "factures.read", "marges.read", "services.manage", "reports.read",
   ],
   directeur_operations: [
+    ...PERMISSIONS_EXECUTION,
     "dossiers.read_all", "dossiers.create", "dossiers.verify",
     "clients.read", "clients.write", "devis.read", "devis.write",
     "marges.read", "reports.read",
   ],
   daf: [
+    ...PERMISSIONS_MISSION,
     "dossiers.read_all", "clients.read", "devis.read",
     "factures.read", "factures.write", "paiements.write", "normalisation.write",
     "marges.read", "audit.read", "reports.read",
   ],
   responsable_departement: [
+    ...PERMISSIONS_EXECUTION,
     "dossiers.read_dept", "dossiers.create", "dossiers.verify",
     "clients.read", "clients.write", "devis.read", "devis.write", "devis.send",
     "factures.read", "marges.read",
   ],
   responsable_dossier: [
+    ...PERMISSIONS_EXECUTION,
     "dossiers.read_own", "dossiers.create", "dossiers.verify",
     "clients.read", "clients.write", "devis.read", "devis.write",
     "factures.read", "marges.read",
   ],
-  acheteur: ["dossiers.read_dept", "clients.read"],
-  responsable_rh: ["dossiers.read_dept", "clients.read"],
-  agent_terrain: ["dossiers.read_assigned"],
+  acheteur: ["dossiers.read_dept", "clients.read", ...PERMISSIONS_MISSION],
+  responsable_rh: ["dossiers.read_dept", "clients.read", ...PERMISSIONS_MISSION],
+  agent_terrain: ["dossiers.read_assigned", ...PERMISSIONS_MISSION],
   client: [],
 }
 
@@ -121,6 +134,9 @@ export type DroitsDossier = {
   normalisation_write: boolean
   marges_read: boolean
   clients_write: boolean
+  execution_write: boolean
+  reception_write: boolean
+  suivi_read: boolean
 }
 
 /** Statuts du circuit, dans l'ordre (sorties en fin de liste) */
@@ -153,11 +169,15 @@ export const STATUTS_PHASE_1: DossierStatut[] = [
 export const STATUTS_TERMINAUX: DossierStatut[] = ["cloture", "refuse", "classe_sans_suite"]
 
 /** Transitions manuelles possibles (hors décisions F-02 qui passent par la validation) */
-export function transitionsManuelles(statut: DossierStatut, d: Pick<DroitsDossier, "verify" | "decide">) {
+export function transitionsManuelles(statut: DossierStatut, d: Pick<DroitsDossier, "verify" | "decide" | "execution_write" | "reception_write">) {
   const t: DossierStatut[] = []
   if (d.verify && (statut === "nouveau" || statut === "complement_requis")) t.push("en_verification")
   if (d.verify && statut === "accepte") t.push("devis_envoye")
   if (d.verify && statut === "devis_envoye") t.push("en_lancement")
+  if (d.execution_write && statut === "en_lancement") t.push("en_cours")
+  if (d.execution_write && statut === "en_cours") t.push("livre")
+  if (d.reception_write && statut === "livre") t.push("reserves", "receptionne_a_facturer")
+  if (d.reception_write && statut === "reserves") t.push("receptionne_a_facturer")
   if (d.verify && statut === "receptionne_a_facturer") t.push("cloture")
   if (d.decide && ["nouveau", "en_verification", "complement_requis"].includes(statut)) {
     t.push("classe_sans_suite")

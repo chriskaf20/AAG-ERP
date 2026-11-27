@@ -178,15 +178,17 @@ export async function enregistrerParametres(_: EtatAction, fd: FormData): Promis
   return { ok: true, message: "Paramètres enregistrés" }
 }
 
-export async function enregistrerRelances(actives: boolean, mode: "simulation" | "reel"): Promise<EtatAction> {
+export async function enregistrerEmails(type: "relances" | "points", actives: boolean, mode: "simulation" | "reel"): Promise<EtatAction> {
   const { ctx, refus } = await autoriser("admin.settings")
   if (refus) return refus
-  if (!ctx.roles.includes("gerant")) return { message: "Seul le gérant peut modifier les relances automatiques" }
+  if (!ctx.roles.includes("gerant")) return { message: "Seul le gérant peut modifier ce réglage." }
+  if (type !== "relances" && type !== "points") return { message: "Réglage invalide" }
+  if (typeof actives !== "boolean") return { message: "État invalide" }
   if (mode !== "simulation" && mode !== "reel") return { message: "Mode invalide" }
   const parametres = {
     ...((ctx.organisation.parametres as Record<string, unknown>) ?? {}),
-    relances_actives: actives,
-    relances_mode: mode,
+    ...(type === "relances" ? { relances_actives: actives, relances_mode: mode }
+      : { points_avancement_email_actifs: actives, points_avancement_email_mode: mode }),
   }
   const { error, count } = await ctx.supabase
     .from("organizations")
@@ -195,5 +197,5 @@ export async function enregistrerRelances(actives: boolean, mode: "simulation" |
   if (error) return { message: messageErreur(error) }
   if (!count) return { message: "Action non autorisée pour votre rôle" }
   revalidatePath("/admin/parametres")
-  return { ok: true, message: actives ? "Relances activées" : "Relances désactivées" }
+  return { ok: true, message: "Réglage enregistré" }
 }

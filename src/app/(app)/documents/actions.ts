@@ -22,6 +22,8 @@ const schema = z.object({
     "facture",
     "contrat",
     "pv_lancement",
+    "pv_reception",
+    "rapport_intervention",
     "recu",
   ]),
   libelle: z.string().trim().max(200).nullable(),

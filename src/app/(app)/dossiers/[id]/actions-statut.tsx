@@ -22,6 +22,10 @@ const LIBELLES: Partial<Record<DossierStatut, string>> = {
   en_verification: "Lancer la vérification",
   devis_envoye: "Passer en « Devis envoyé »",
   en_lancement: "Lancer le dossier",
+  en_cours: "Démarrer l’exécution",
+  livre: "Marquer livré",
+  reserves: "Passer avec réserves",
+  receptionne_a_facturer: "Valider la réception",
   cloture: "Clôturer",
 }
 
@@ -49,26 +53,28 @@ export function ActionsStatut({
 
   return (
     <>
-      {transitions.map((s) =>
-        s === "classe_sans_suite" ? (
-          <Button
-            key={s}
-            size="sm"
-            variant="outline"
-            disabled={enCours}
-            onClick={() => {
-              setMotif("")
-              setMotifPour(s)
-            }}
-          >
-            Classer sans suite
-          </Button>
-        ) : (
-          <Button key={s} size="sm" disabled={enCours} onClick={() => appliquer(s)}>
-            {LIBELLES[s] ?? t(s)}
-          </Button>
-        )
-      )}
+      <div className="flex flex-wrap justify-end gap-2 max-sm:max-w-48">
+        {transitions.map((s) =>
+          s === "classe_sans_suite" ? (
+            <Button
+              key={s}
+              size="sm"
+              variant="outline"
+              disabled={enCours}
+              onClick={() => {
+                setMotif("")
+                setMotifPour(s)
+              }}
+            >
+              Classer sans suite
+            </Button>
+          ) : (
+            <Button key={s} size="sm" disabled={enCours} onClick={() => appliquer(s)}>
+              {LIBELLES[s] ?? t(s)}
+            </Button>
+          )
+        )}
+      </div>
       <Dialog open={motifPour !== null} onOpenChange={(o) => !o && setMotifPour(null)}>
         <DialogContent>
           <form

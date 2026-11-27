@@ -9,13 +9,15 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Switch } from "@/components/ui/switch"
 import { useAction } from "@/hooks/use-action"
-import { enregistrerRelances } from "../actions"
+import { enregistrerEmails } from "../actions"
 
-export function ParametresRelances({
+export function ParametresEmails({
+  type,
   actives: activesInitial,
   mode: modeInitial,
   gerant,
 }: {
+  type: "relances" | "points"
   actives: boolean
   mode: "simulation" | "reel"
   gerant: boolean
@@ -24,12 +26,14 @@ export function ParametresRelances({
   const [actives, setActives] = React.useState(activesInitial)
   const [mode, setMode] = React.useState(modeInitial)
 
+  const points = type === "points"
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Relances automatiques</CardTitle>
+        <CardTitle>{points ? "Points d’avancement par email" : "Relances automatiques"}</CardTitle>
         <CardDescription>
-          Devis non signés à J+7, factures impayées à J+7, J+15 et J+30 après échéance (chaque jour à 07:00).
+          {points ? "Envoi au client après consignation d’un point depuis le dossier."
+            : "Devis non signés à J+7, factures impayées à J+7, J+15 et J+30 après échéance (chaque jour à 07:00)."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -40,29 +44,29 @@ export function ParametresRelances({
             </Alert>
           )}
           <Field orientation="horizontal">
-            <Switch id="relances-actives" checked={actives} onCheckedChange={setActives} disabled={!gerant} />
-            <FieldLabel htmlFor="relances-actives">Relances activées</FieldLabel>
+            <Switch id={`${type}-actives`} checked={actives} onCheckedChange={setActives} disabled={!gerant} />
+            <FieldLabel htmlFor={`${type}-actives`}>{points ? "Envoi des points activé" : "Relances activées"}</FieldLabel>
           </Field>
           <Field>
-            <FieldLabel htmlFor="relances-mode">Mode</FieldLabel>
+            <FieldLabel htmlFor={`${type}-mode`}>Mode</FieldLabel>
             <NativeSelect
-              id="relances-mode"
+              id={`${type}-mode`}
               className="w-full sm:w-72"
               value={mode}
               onChange={(e) => setMode(e.target.value as "simulation" | "reel")}
               disabled={!gerant}
             >
-              <NativeSelectOption value="simulation">Simulation (tracées, aucun email envoyé)</NativeSelectOption>
+              <NativeSelectOption value="simulation">Simulation (envois consignés)</NativeSelectOption>
               <NativeSelectOption value="reel">Réel (emails envoyés aux clients)</NativeSelectOption>
             </NativeSelect>
-            <FieldDescription>Les adresses se terminant par .test ne sont jamais relancées.</FieldDescription>
+            <FieldDescription>Les adresses se terminant par .test sont ignorées.</FieldDescription>
           </Field>
           {gerant && (
             <div className="flex justify-end">
               <Button
                 variant="outline"
                 disabled={enCours || (actives === activesInitial && mode === modeInitial)}
-                onClick={() => run(() => enregistrerRelances(actives, mode))}
+                onClick={() => run(() => enregistrerEmails(type, actives, mode))}
               >
                 Enregistrer
               </Button>

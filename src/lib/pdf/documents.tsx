@@ -54,6 +54,7 @@ export type TotauxPdf = {
   total_remise: number
   total_ht: number
   total_taxes: number
+  arrondi?: number
   total_ttc: number
   taxes: { libelle?: string; code: string; taux: number }[]
 }
@@ -270,6 +271,10 @@ function Totaux({ t, extra }: { t: TotauxPdf; extra?: { libelle: string; montant
           <Text>{montantPdf(Math.round(t.total_ht * x.taux) / 100, t.devise)}</Text>
         </View>
       ))}
+      {!!t.arrondi && <View style={s.totalLigne}>
+        <Text>Arrondi</Text>
+        <Text>{montantPdf(t.arrondi, t.devise)}</Text>
+      </View>}
       <View style={s.totalTtc}>
         <Text>Total TTC</Text>
         <Text>{montantPdf(t.total_ttc, t.devise)}</Text>

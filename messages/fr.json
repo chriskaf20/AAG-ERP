@@ -102,6 +102,8 @@
     "facture": "Facture",
     "contrat": "Contrat",
     "pv_lancement": "PV de lancement F-04",
+    "pv_reception": "PV de réception",
+    "rapport_intervention": "Rapport d’intervention",
     "recu": "Reçu"
   },
   "clientTypes": {

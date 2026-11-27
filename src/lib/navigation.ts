@@ -28,21 +28,21 @@ type Entree = NavItem & { permis: Permission[] | "tous" }
 
 /** Seul un agent terrain (missions affectées) n'a pas de tableau de bord général. */
 export function accueil(perms: readonly Permission[]) {
-  const general = perms.some((p) => p !== "dossiers.read_assigned")
-  return general ? "/tableau-de-bord" : perms.includes("dossiers.read_assigned") ? "/missions" : "/profil"
+  const general = perms.some((p) => !["dossiers.read_assigned", "missions.read_assigned", "missions.report"].includes(p))
+  return general ? "/tableau-de-bord" : aUne(perms, "missions.read_assigned", "dossiers.read_assigned") ? "/missions" : "/profil"
 }
 
 /** Menu calculé côté serveur à partir des permissions, dans un ordre fixe ; groupes vides masqués. */
 export async function menuNavigation(perms: readonly Permission[]): Promise<NavGroupe[]> {
   const t = await getTranslations("nav")
-  const general = perms.some((p) => p !== "dossiers.read_assigned")
+  const general = perms.some((p) => !["dossiers.read_assigned", "missions.read_assigned", "missions.report"].includes(p))
 
   const groupes: { titre: string; items: Entree[] }[] = [
     {
       titre: "Activité",
       items: [
         ...(general ? [{ titre: t("tableauDeBord"), url: "/tableau-de-bord", icone: "tableau" as const, permis: "tous" as const }] : []),
-        { titre: t("missions"), url: "/missions", icone: "missions", permis: ["dossiers.read_assigned"] },
+        { titre: t("missions"), url: "/missions", icone: "missions", permis: ["missions.read_assigned", "dossiers.read_assigned"] },
         { titre: t("dossiers"), url: "/dossiers", icone: "dossiers", permis: LECTURE_DOSSIERS },
         { titre: t("nouveauDossier"), url: "/dossiers/nouveau", icone: "nouveau", permis: ["dossiers.create"] },
         { titre: t("clients"), url: "/clients", icone: "clients", permis: ["clients.read"] },

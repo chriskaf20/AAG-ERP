@@ -14,6 +14,805 @@ export type Database = {
   }
   public: {
     Tables: {
+      avis_clients: {
+        Row: {
+          commentaire: string | null
+          created_at: string
+          created_by: string | null
+          dossier_id: string
+          id: string
+          note: number
+          organization_id: string
+          saisi_par: string | null
+          updated_at: string
+        }
+        Insert: {
+          commentaire?: string | null
+          created_at?: string
+          created_by?: string | null
+          dossier_id: string
+          id?: string
+          note: number
+          organization_id: string
+          saisi_par?: string | null
+          updated_at?: string
+        }
+        Update: {
+          commentaire?: string | null
+          created_at?: string
+          created_by?: string | null
+          dossier_id?: string
+          id?: string
+          note?: number
+          organization_id?: string
+          saisi_par?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avis_clients_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: true
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avis_clients_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avis_clients_saisi_par_fkey"
+            columns: ["saisi_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          action_corrective: string | null
+          created_at: string
+          created_by: string | null
+          date_cloture: string | null
+          description: string
+          dossier_id: string
+          gravite: Database["public"]["Enums"]["incident_gravite"]
+          id: string
+          mission_id: string | null
+          organization_id: string
+          responsable_id: string | null
+          statut: Database["public"]["Enums"]["incident_statut"]
+          updated_at: string
+        }
+        Insert: {
+          action_corrective?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_cloture?: string | null
+          description: string
+          dossier_id: string
+          gravite?: Database["public"]["Enums"]["incident_gravite"]
+          id?: string
+          mission_id?: string | null
+          organization_id: string
+          responsable_id?: string | null
+          statut?: Database["public"]["Enums"]["incident_statut"]
+          updated_at?: string
+        }
+        Update: {
+          action_corrective?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_cloture?: string | null
+          description?: string
+          dossier_id?: string
+          gravite?: Database["public"]["Enums"]["incident_gravite"]
+          id?: string
+          mission_id?: string | null
+          organization_id?: string
+          responsable_id?: string | null
+          statut?: Database["public"]["Enums"]["incident_statut"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_responsable_id_fkey"
+            columns: ["responsable_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      livrables: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          document_id: string | null
+          dossier_id: string
+          echeance: string | null
+          id: string
+          libelle: string
+          organization_id: string
+          remis_le: string | null
+          remis_par: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_id?: string | null
+          dossier_id: string
+          echeance?: string | null
+          id?: string
+          libelle: string
+          organization_id: string
+          remis_le?: string | null
+          remis_par?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_id?: string | null
+          dossier_id?: string
+          echeance?: string | null
+          id?: string
+          libelle?: string
+          organization_id?: string
+          remis_le?: string | null
+          remis_par?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "livrables_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "livrables_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "livrables_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "livrables_remis_par_fkey"
+            columns: ["remis_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mission_agents: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          mission_id: string
+          organization_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mission_id: string
+          organization_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mission_id?: string
+          organization_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_agents_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_agents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_agents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          consignes: string | null
+          created_at: string
+          created_by: string | null
+          debut: string
+          dossier_id: string
+          fin: string | null
+          id: string
+          lieu: string | null
+          motif_annulation: string | null
+          organization_id: string
+          statut: Database["public"]["Enums"]["mission_statut"]
+          titre: string
+          type: Database["public"]["Enums"]["mission_type"]
+          updated_at: string
+        }
+        Insert: {
+          consignes?: string | null
+          created_at?: string
+          created_by?: string | null
+          debut: string
+          dossier_id: string
+          fin?: string | null
+          id?: string
+          lieu?: string | null
+          motif_annulation?: string | null
+          organization_id: string
+          statut?: Database["public"]["Enums"]["mission_statut"]
+          titre: string
+          type: Database["public"]["Enums"]["mission_type"]
+          updated_at?: string
+        }
+        Update: {
+          consignes?: string | null
+          created_at?: string
+          created_by?: string | null
+          debut?: string
+          dossier_id?: string
+          fin?: string | null
+          id?: string
+          lieu?: string | null
+          motif_annulation?: string | null
+          organization_id?: string
+          statut?: Database["public"]["Enums"]["mission_statut"]
+          titre?: string
+          type?: Database["public"]["Enums"]["mission_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "missions_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "missions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      points_avancement: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date_point: string
+          dossier_id: string
+          email_destinataire: string | null
+          email_erreur: string | null
+          email_le: string | null
+          email_statut: string
+          envoye_par: string | null
+          id: string
+          organization_id: string
+          texte: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date_point?: string
+          dossier_id: string
+          email_destinataire?: string | null
+          email_erreur?: string | null
+          email_le?: string | null
+          email_statut?: string
+          envoye_par?: string | null
+          id?: string
+          organization_id: string
+          texte: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date_point?: string
+          dossier_id?: string
+          email_destinataire?: string | null
+          email_erreur?: string | null
+          email_le?: string | null
+          email_statut?: string
+          envoye_par?: string | null
+          id?: string
+          organization_id?: string
+          texte?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "points_avancement_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "points_avancement_envoye_par_fkey"
+            columns: ["envoye_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "points_avancement_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pv_reception: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date_limite_reserves: string | null
+          date_reception: string
+          decision: string | null
+          dossier_id: string
+          id: string
+          lieu: string | null
+          motif_refus: string | null
+          observations: string | null
+          organization_id: string
+          refuse_le: string | null
+          satisfaction: number | null
+          signature_atlas_id: string | null
+          signature_client_id: string | null
+          signe_le: string | null
+          type: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date_limite_reserves?: string | null
+          date_reception?: string
+          decision?: string | null
+          dossier_id: string
+          id?: string
+          lieu?: string | null
+          motif_refus?: string | null
+          observations?: string | null
+          organization_id: string
+          refuse_le?: string | null
+          satisfaction?: number | null
+          signature_atlas_id?: string | null
+          signature_client_id?: string | null
+          signe_le?: string | null
+          type: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date_limite_reserves?: string | null
+          date_reception?: string
+          decision?: string | null
+          dossier_id?: string
+          id?: string
+          lieu?: string | null
+          motif_refus?: string | null
+          observations?: string | null
+          organization_id?: string
+          refuse_le?: string | null
+          satisfaction?: number | null
+          signature_atlas_id?: string | null
+          signature_client_id?: string | null
+          signe_le?: string | null
+          type?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_reception_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_reception_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_reception_signature_atlas_id_fkey"
+            columns: ["signature_atlas_id"]
+            isOneToOne: false
+            referencedRelation: "signatures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_reception_signature_client_id_fkey"
+            columns: ["signature_client_id"]
+            isOneToOne: false
+            referencedRelation: "signatures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pv_reception_lignes: {
+        Row: {
+          code: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          libelle: string
+          observation: string | null
+          ordre: number
+          organization_id: string
+          pv_id: string
+          resultat: string | null
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          libelle: string
+          observation?: string | null
+          ordre?: number
+          organization_id: string
+          pv_id: string
+          resultat?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          libelle?: string
+          observation?: string | null
+          ordre?: number
+          organization_id?: string
+          pv_id?: string
+          resultat?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pv_reception_lignes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_reception_lignes_pv_id_fkey"
+            columns: ["pv_id"]
+            isOneToOne: false
+            referencedRelation: "pv_reception"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rapport_photos: {
+        Row: {
+          chemin: string
+          created_at: string
+          created_by: string | null
+          hauteur: number | null
+          id: string
+          largeur: number | null
+          legende: string | null
+          organization_id: string
+          rapport_id: string
+          taille: number | null
+          updated_at: string
+        }
+        Insert: {
+          chemin: string
+          created_at?: string
+          created_by?: string | null
+          hauteur?: number | null
+          id?: string
+          largeur?: number | null
+          legende?: string | null
+          organization_id: string
+          rapport_id: string
+          taille?: number | null
+          updated_at?: string
+        }
+        Update: {
+          chemin?: string
+          created_at?: string
+          created_by?: string | null
+          hauteur?: number | null
+          id?: string
+          largeur?: number | null
+          legende?: string | null
+          organization_id?: string
+          rapport_id?: string
+          taille?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rapport_photos_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rapport_photos_rapport_id_fkey"
+            columns: ["rapport_id"]
+            isOneToOne: false
+            referencedRelation: "rapports_intervention"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rapports_intervention: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dossier_id: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          mission_id: string
+          observations: string | null
+          organization_id: string
+          precision_m: number | null
+          redige_par: string | null
+          remplace_id: string | null
+          signature_client_id: string | null
+          signe_le: string | null
+          travaux: string
+          updated_at: string
+          valide_le: string | null
+          valide_par: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dossier_id: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          mission_id: string
+          observations?: string | null
+          organization_id: string
+          precision_m?: number | null
+          redige_par?: string | null
+          remplace_id?: string | null
+          signature_client_id?: string | null
+          signe_le?: string | null
+          travaux: string
+          updated_at?: string
+          valide_le?: string | null
+          valide_par?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dossier_id?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          mission_id?: string
+          observations?: string | null
+          organization_id?: string
+          precision_m?: number | null
+          redige_par?: string | null
+          remplace_id?: string | null
+          signature_client_id?: string | null
+          signe_le?: string | null
+          travaux?: string
+          updated_at?: string
+          valide_le?: string | null
+          valide_par?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rapports_intervention_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rapports_intervention_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rapports_intervention_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rapports_intervention_redige_par_fkey"
+            columns: ["redige_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rapports_intervention_remplace_id_fkey"
+            columns: ["remplace_id"]
+            isOneToOne: false
+            referencedRelation: "rapports_intervention"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rapports_intervention_signature_client_id_fkey"
+            columns: ["signature_client_id"]
+            isOneToOne: false
+            referencedRelation: "signatures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rapports_intervention_valide_par_fkey"
+            columns: ["valide_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reserves: {
+        Row: {
+          commentaire_levee: string | null
+          created_at: string
+          created_by: string | null
+          date_limite: string | null
+          description: string
+          dossier_id: string
+          id: string
+          levee_le: string | null
+          levee_par: string | null
+          organization_id: string
+          pv_id: string
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          commentaire_levee?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_limite?: string | null
+          description: string
+          dossier_id: string
+          id?: string
+          levee_le?: string | null
+          levee_par?: string | null
+          organization_id: string
+          pv_id: string
+          statut?: string
+          updated_at?: string
+        }
+        Update: {
+          commentaire_levee?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_limite?: string | null
+          description?: string
+          dossier_id?: string
+          id?: string
+          levee_le?: string | null
+          levee_par?: string | null
+          organization_id?: string
+          pv_id?: string
+          statut?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reserves_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reserves_levee_par_fkey"
+            columns: ["levee_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reserves_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reserves_pv_id_fkey"
+            columns: ["pv_id"]
+            isOneToOne: false
+            referencedRelation: "pv_reception"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -366,6 +1165,7 @@ export type Database = {
       }
       contrats: {
         Row: {
+          reception_tacite: boolean
           created_at: string
           created_by: string | null
           date_debut: string | null
@@ -384,6 +1184,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          reception_tacite?: boolean
           created_at?: string
           created_by?: string | null
           date_debut?: string | null
@@ -402,6 +1203,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          reception_tacite?: boolean
           created_at?: string
           created_by?: string | null
           date_debut?: string | null
@@ -1052,6 +1854,9 @@ export type Database = {
       }
       dossiers: {
         Row: {
+          receptionne_le: string | null
+          reception_tacite: boolean
+          garantie_fin: string | null
           accuse_reception_envoye: boolean
           annee: number
           besoin: string
@@ -1078,6 +1883,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          receptionne_le?: string | null
+          reception_tacite?: boolean
+          garantie_fin?: string | null
           accuse_reception_envoye?: boolean
           annee?: number
           besoin: string
@@ -1104,6 +1912,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          receptionne_le?: string | null
+          reception_tacite?: boolean
+          garantie_fin?: string | null
           accuse_reception_envoye?: boolean
           annee?: number
           besoin?: string
@@ -1245,6 +2056,7 @@ export type Database = {
       }
       factures: {
         Row: {
+          arrondi: number
           code_authentification_def: string | null
           created_at: string
           created_by: string | null
@@ -1283,6 +2095,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          arrondi?: number
           code_authentification_def?: string | null
           created_at?: string
           created_by?: string | null
@@ -1321,6 +2134,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          arrondi?: number
           code_authentification_def?: string | null
           created_at?: string
           created_by?: string | null
@@ -2221,6 +3035,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      confirmer_envoi_point: { Args: { p_erreur?: string; p_ok: boolean; p_point: string }; Returns: undefined }
+      creer_lien_pv_reception: { Args: { p_pv: string }; Returns: string }
+      enregistrer_point_avancement: { Args: { p_dossier: string; p_texte: string }; Returns: Json }
+      lever_reserve: { Args: { p_commentaire?: string; p_reserve: string }; Returns: Database["public"]["Tables"]["reserves"]["Row"] }
+      mes_missions: { Args: { p_org: string }; Returns: Json }
+      mission_detail: { Args: { p_mission: string }; Returns: Json }
+      nouvelle_version_rapport: { Args: { p_rapport: string }; Returns: string }
+      refuser_reception: { Args: { p_motif: string; p_pv: string }; Returns: Database["public"]["Tables"]["dossiers"]["Row"] }
+      signer_pv_reception: { Args: { p_image: string; p_nom: string; p_partie: string; p_pv: string }; Returns: Database["public"]["Tables"]["pv_reception"]["Row"] }
+      signer_rapport: { Args: { p_image: string; p_nom: string; p_rapport: string }; Returns: Database["public"]["Tables"]["rapports_intervention"]["Row"] }
+      valider_rapport: { Args: { p_rapport: string }; Returns: Database["public"]["Tables"]["rapports_intervention"]["Row"] }
       calcul_taxes: { Args: { p_ht: number; p_taxes: Json }; Returns: number }
       can_edit_dossier: { Args: { p_dossier: string }; Returns: boolean }
       can_see_client: { Args: { p_client: string }; Returns: boolean }
@@ -2878,6 +3703,10 @@ export type Database = {
       }
     }
     Enums: {
+      mission_type: "terrain" | "interne"
+      mission_statut: "planifiee" | "en_cours" | "terminee" | "annulee"
+      incident_gravite: "faible" | "moyenne" | "elevee"
+      incident_statut: "ouvert" | "en_traitement" | "clos"
       app_permission:
         | "dossiers.read_all"
         | "dossiers.read_dept"
@@ -2902,6 +3731,10 @@ export type Database = {
         | "admin.settings"
         | "audit.read"
         | "reports.read"
+        | "missions.read_assigned"
+        | "missions.report"
+        | "execution.write"
+        | "reception.write"
       app_role:
         | "admin_systeme"
         | "gerant"
@@ -2929,6 +3762,8 @@ export type Database = {
         | "remplace"
       devise: "USD" | "CDF"
       document_type:
+        | "pv_reception"
+        | "rapport_intervention"
         | "rccm"
         | "id_nat"
         | "nif"
@@ -2973,7 +3808,7 @@ export type Database = {
         | "especes"
       piece_type: "rccm" | "id_nat" | "nif" | "piece_identite" | "autre"
       relance_niveau: "j7" | "j15" | "j30"
-      signature_objet: "devis" | "pv_lancement"
+      signature_objet: "devis" | "pv_lancement" | "pv_reception" | "rapport_intervention"
       unite_service: "forfait" | "jour" | "mois" | "m2" | "course"
       verification_decision: "accepte" | "complement_requis" | "refuse"
     }
@@ -3103,6 +3938,10 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      mission_type: ["terrain", "interne"],
+      mission_statut: ["planifiee", "en_cours", "terminee", "annulee"],
+      incident_gravite: ["faible", "moyenne", "elevee"],
+      incident_statut: ["ouvert", "en_traitement", "clos"],
       app_permission: [
         "dossiers.read_all",
         "dossiers.read_dept",
@@ -3127,6 +3966,10 @@ export const Constants = {
         "admin.settings",
         "audit.read",
         "reports.read",
+        "missions.read_assigned",
+        "missions.report",
+        "execution.write",
+        "reception.write",
       ],
       app_role: [
         "admin_systeme",
@@ -3157,6 +4000,8 @@ export const Constants = {
       ],
       devise: ["USD", "CDF"],
       document_type: [
+        "pv_reception",
+        "rapport_intervention",
         "rccm",
         "id_nat",
         "nif",
@@ -3205,7 +4050,7 @@ export const Constants = {
       ],
       piece_type: ["rccm", "id_nat", "nif", "piece_identite", "autre"],
       relance_niveau: ["j7", "j15", "j30"],
-      signature_objet: ["devis", "pv_lancement"],
+      signature_objet: ["devis", "pv_lancement", "pv_reception", "rapport_intervention"],
       unite_service: ["forfait", "jour", "mois", "m2", "course"],
       verification_decision: ["accepte", "complement_requis", "refuse"],
     },

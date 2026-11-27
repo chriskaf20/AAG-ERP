@@ -5,6 +5,7 @@ import { Logo } from "@/components/logo"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatDate, formatMontant } from "@/lib/format"
+import { DECISIONS_PV, RESULTATS_PV } from "@/lib/reception"
 import { donneesDevis } from "@/lib/pdf/donnees"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { FormulaireSignature } from "./formulaire-signature"
@@ -14,7 +15,7 @@ export const metadata: Metadata = { title: "Signature", robots: { index: false, 
 type Info = {
   valide: boolean
   raison: string | null
-  objet_type: "devis" | "pv_lancement"
+  objet_type: "devis" | "pv_lancement" | "pv_reception"
   objet_id: string
   dossier_id: string
 }
@@ -117,6 +118,35 @@ export default async function PageSignature({ params }: PageProps<"/signer/[jeto
         </>
       )
     }
+  } else if (info.objet_type === "pv_reception") {
+    const [{ data: pv }, { data: lignes }, { data: reserves }] = await Promise.all([
+      admin.from("pv_reception").select("*, dossiers(numero, organizations(nom))").eq("id", info.objet_id).maybeSingle(),
+      admin.from("pv_reception_lignes").select("libelle, resultat, observation").eq("pv_id", info.objet_id).order("ordre").order("created_at"),
+      admin.from("reserves").select("description, date_limite").eq("pv_id", info.objet_id).order("created_at"),
+    ])
+    contenu = pv && lignes && reserves ? <>
+      <Card>
+        <CardHeader>
+          <CardTitle>PV de réception F-{pv.type.slice(1)} · version {pv.version}</CardTitle>
+          <CardDescription>{pv.dossiers?.organizations?.nom} · Dossier {pv.dossiers?.numero} · {formatDate(pv.date_reception)}</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 text-sm">
+          <p>{pv.decision && DECISIONS_PV[pv.decision]}{pv.lieu && ` · ${pv.lieu}`}</p>
+          {pv.observations && <p className="whitespace-pre-wrap">{pv.observations}</p>}
+          {pv.satisfaction != null && <p>Satisfaction {pv.satisfaction}/5</p>}
+          <ul className="grid gap-2">{lignes.map((l, i) => <li key={i}>
+            <strong>{l.libelle}</strong> · {l.resultat && RESULTATS_PV[l.resultat]}{l.observation && ` · ${l.observation}`}
+          </li>)}</ul>
+          {reserves.length > 0 && <div className="grid gap-1">
+            <h2 className="font-medium">Réserves · échéance le {formatDate(pv.date_limite_reserves)}</h2>
+            <ul className="list-inside list-disc">{reserves.map((r, i) => <li key={i}>
+              {r.description}{r.date_limite && ` · ${formatDate(r.date_limite)}`}
+            </li>)}</ul>
+          </div>}
+        </CardContent>
+      </Card>
+      <FormulaireSignature jeton={jeton} accord="J’ai lu le procès-verbal et j’accepte la réception selon la décision indiquée." />
+    </> : <Alert><AlertDescription>PV de réception indisponible.</AlertDescription></Alert>
   } else {
     const { data: pv } = await admin
       .from("pv_lancement")
