@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useActionState, startTransition } from "react"
 import { useTranslations } from "next-intl"
-import { CopyIcon, UserPlusIcon } from "lucide-react"
+import { UserPlusIcon } from "lucide-react"
 
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -32,31 +32,17 @@ export function NouvelUtilisateur({
   return (
     <>
       <Button size="sm" onClick={() => setOuvert(true)}>
-        <UserPlusIcon /> Nouvel utilisateur
+        <UserPlusIcon /> Inviter un utilisateur
       </Button>
       <Dialog open={ouvert} onOpenChange={setOuvert}>
         <DialogContent>
-          {etat?.ok && etat.motDePasse ? (
+          {etat?.ok ? (
             <>
               <DialogHeader>
-                <DialogTitle>Compte créé</DialogTitle>
+                <DialogTitle>Invitation envoyée</DialogTitle>
                 <DialogDescription>{etat.message}</DialogDescription>
               </DialogHeader>
-              <div className="flex items-center gap-2 rounded-lg border bg-muted p-3 font-mono text-sm">
-                <span className="flex-1 select-all">{etat.motDePasse}</span>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => navigator.clipboard.writeText(etat.motDePasse!)}
-                >
-                  <CopyIcon />
-                  <span className="sr-only">Copier</span>
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">Ce mot de passe ne sera plus affiché.</p>
-              <DialogFooter>
-                <Button onClick={() => window.location.reload()}>Terminer</Button>
-              </DialogFooter>
+              <DialogFooter><Button onClick={() => window.location.reload()}>Terminer</Button></DialogFooter>
             </>
           ) : (
             <form
@@ -68,14 +54,14 @@ export function NouvelUtilisateur({
               noValidate
             >
               <DialogHeader>
-                <DialogTitle>Nouvel utilisateur</DialogTitle>
-                <DialogDescription>Un mot de passe provisoire sera généré.</DialogDescription>
+                <DialogTitle>Inviter un utilisateur</DialogTitle>
+                <DialogDescription>La personne recevra un lien pour activer son compte et choisir son mot de passe.</DialogDescription>
               </DialogHeader>
               <FieldGroup className="py-4">
                 {!serviceRoleOk && (
                   <Alert variant="destructive">
                     <AlertDescription>
-                      SUPABASE_SERVICE_ROLE_KEY absente de la configuration serveur : création impossible.
+                      SUPABASE_SERVICE_ROLE_KEY absente de la configuration serveur : invitation impossible.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -134,7 +120,7 @@ export function NouvelUtilisateur({
                   Annuler
                 </Button>
                 <Button type="submit" disabled={enCours || !serviceRoleOk}>
-                  {enCours ? "Création…" : "Créer le compte"}
+                  {enCours ? "Envoi…" : "Envoyer l’invitation"}
                 </Button>
               </DialogFooter>
             </form>

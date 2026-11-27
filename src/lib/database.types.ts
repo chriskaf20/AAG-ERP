@@ -3648,6 +3648,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      preparer_invitation: {
+        Args: { p_org: string; p_email: string; p_nom: string; p_fonction: string | null; p_role: Database["public"]["Enums"]["app_role"]; p_departement: string | null }
+        Returns: string
+      }
+      invitation_rattachee: { Args: { p_invitation: string; p_user: string }; Returns: boolean }
       portail_comptes_gerant: {
         Args: { p_org: string }
         Returns: { user_id: string; client_id: string | null; nom: string | null; email: string | null }[]

@@ -1,6 +1,5 @@
 "use server"
 
-import { randomBytes } from "node:crypto"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
@@ -13,14 +12,14 @@ import { createAdminClient } from "@/lib/supabase/admin"
 const roleSchema = z.enum(ROLES as [AppRole, ...AppRole[]])
 
 const nouvelUtilisateur = z.object({
-  email: z.email("Email invalide"),
-  nom_complet: z.string().trim().min(2, "Nom requis"),
+  email: z.email("Email invalide").max(254),
+  nom_complet: z.string().trim().min(2, "Nom requis").max(150),
   fonction: z.string().trim().optional(),
   role: roleSchema,
   department_id: z.uuid().nullable(),
 })
 
-export type EtatCreation = (EtatAction & { motDePasse?: string }) | null
+export type EtatCreation = EtatAction
 
 export async function creerUtilisateur(_: EtatCreation, fd: FormData): Promise<EtatCreation> {
   const { ctx, refus } = await autoriser("admin.users")
@@ -34,7 +33,7 @@ export async function creerUtilisateur(_: EtatCreation, fd: FormData): Promise<E
   })
   if (!parsed.success) return { erreurs: z.flattenError(parsed.error).fieldErrors }
   const u = parsed.data
-  if (u.role === "responsable_departement" && !u.department_id) {
+  if (ROLES_DEPARTEMENT.includes(u.role) && !u.department_id) {
     return { erreurs: { department_id: ["Département requis pour ce rôle"] } }
   }
   if (u.role === "admin_systeme" && !ctx.roles.includes("admin_systeme")) {
@@ -48,37 +47,24 @@ export async function creerUtilisateur(_: EtatCreation, fd: FormData): Promise<E
     return { message: (e as Error).message }
   }
 
-  const motDePasse = `Atlas-${randomBytes(6).toString("base64url")}`
-  const { data, error } = await admin.auth.admin.createUser({
-    email: u.email,
-    password: motDePasse,
-    email_confirm: true,
-    user_metadata: { nom_complet: u.nom_complet },
+  const email = u.email.toLowerCase()
+  const { data: invitation, error: preparation } = await ctx.supabase.rpc("preparer_invitation", {
+    p_org: ctx.organisation.id, p_email: email, p_nom: u.nom_complet, p_fonction: u.fonction || null, p_role: u.role,
+    p_departement: ROLES_DEPARTEMENT.includes(u.role) ? u.department_id : null,
   })
-  if (error || !data.user) {
-    return { message: error?.message.includes("already") ? "Cet email est déjà utilisé" : messageErreur(error) }
+  if (preparation || !invitation) return { message: messageErreur(preparation) }
+
+  const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { data: { atlas_invitation: invitation } })
+  if (error || !data.user) return { message: messageErreur(error) }
+
+  const rattachement = await admin.rpc("invitation_rattachee", { p_invitation: invitation, p_user: data.user.id })
+  if (rattachement.error || !rattachement.data) {
+    return { message: "Le rôle n’a pas été confirmé. Vérifiez le rattachement avant de renvoyer l’invitation." }
   }
-
-  await admin
-    .from("profiles")
-    .update({ fonction: u.fonction || null, organization_id: ctx.organisation.id })
-    .eq("id", data.user.id)
-
-  // Le rôle est attribué avec la session de l'administrateur : la RLS s'applique.
-  const { error: errRole } = await ctx.supabase.from("user_roles").insert({
-    organization_id: ctx.organisation.id,
-    user_id: data.user.id,
-    role: u.role,
-    department_id: ROLES_DEPARTEMENT.includes(u.role) ? u.department_id : null,
-  })
-  if (errRole) return { message: messageErreur(errRole) }
 
   revalidatePath("/admin/utilisateurs")
-  return {
-    ok: true,
-    message: `Compte créé pour ${u.email}. Transmettez ce mot de passe provisoire :`,
-    motDePasse,
-  }
+  revalidatePath("/admin/roles")
+  return { ok: true, message: `Invitation envoyée à ${email}.` }
 }
 
 export async function modifierProfil(userId: string, _: EtatAction, fd: FormData): Promise<EtatAction> {
