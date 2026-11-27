@@ -13,6 +13,20 @@ function resultat(mission: string, error: { message: string; code?: string } | n
   return { ok: true, message }
 }
 
+async function ouvrirRapportDeLaMission(mission: string, rapport: string) {
+  const { supabase, organisation } = await getContexte()
+  const { data, error } = await supabase
+    .from("rapports_intervention")
+    .select("id")
+    .eq("id", rapport)
+    .eq("mission_id", mission)
+    .eq("organization_id", organisation.id)
+    .maybeSingle()
+
+  const refus = error ? { message: messageErreur(error) } : data ? null : { message: "Rapport indisponible" }
+  return { supabase, refus }
+}
+
 export async function enregistrerRapport(mission: string, dossier: string, rapport: string | null, fd: FormData) {
   const { supabase, organisation } = await getContexte()
   const travaux = texte(fd, "travaux")
@@ -21,12 +35,14 @@ export async function enregistrerRapport(mission: string, dossier: string, rappo
   const requete = rapport
     ? supabase.from("rapports_intervention").update(valeurs).eq("id", rapport).eq("mission_id", mission).eq("organization_id", organisation.id)
     : supabase.from("rapports_intervention").insert({ ...valeurs, organization_id: organisation.id, mission_id: mission, dossier_id: dossier })
-  const { error } = await requete.select("id").single()
+  const { data, error } = await requete.select("id").maybeSingle()
+  if (!error && !data) return { message: "Rapport indisponible ou non modifiable" }
   return resultat(mission, error, "Rapport enregistré")
 }
 
 export async function terminerRapport(mission: string, rapport: string, signature?: { nom: string; image: string }) {
-  const { supabase } = await getContexte()
+  const { supabase, refus } = await ouvrirRapportDeLaMission(mission, rapport)
+  if (refus) return refus
   if (signature && !z.object({ nom: z.string().trim().min(2).max(150), image: z.string().startsWith("data:image/png;base64,").max(700_000) }).safeParse(signature).success) {
     return { message: "Indiquez le nom du client et tracez sa signature." }
   }
@@ -37,7 +53,8 @@ export async function terminerRapport(mission: string, rapport: string, signatur
 }
 
 export async function reprendreRapport(mission: string, rapport: string) {
-  const { supabase } = await getContexte()
+  const { supabase, refus } = await ouvrirRapportDeLaMission(mission, rapport)
+  if (refus) return refus
   const { error } = await supabase.rpc("nouvelle_version_rapport", { p_rapport: rapport })
   return resultat(mission, error, "Nouvelle version du rapport préparée")
 }

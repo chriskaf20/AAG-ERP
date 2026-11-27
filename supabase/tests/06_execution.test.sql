@@ -211,15 +211,16 @@ select throws_ok($$insert into public.missions (organization_id, dossier_id, typ
                    values ('a0000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000001',
                            'terrain', 'Après livraison', now())$$,
                  '23514', null, 'dossier livré : plus de nouvelle mission');
+select pg_temp.en('10000000-0000-4000-8000-000000000011');
 select throws_ok($$select public.nouvelle_version_rapport('ac000000-0000-4000-8000-000000000001')$$,
-                 '23514', null, 'dossier livré : rapport non repris');
+                 '23514', null, 'dossier livré : même l’agent affecté ne peut pas reprendre le rapport');
 
 -- ---------------------------------------------------------------------------
 -- Lecture
 -- ---------------------------------------------------------------------------
 select pg_temp.en('10000000-0000-4000-8000-000000000006');
 select is((select count(*)::int from public.missions where dossier_id = 'f0000000-0000-4000-8000-000000000001'),
-          2, 'DAF : lit les missions (lecture seule sur tous les dossiers)');
+          0, 'DAF non affecté : le droit de lire les dossiers ne donne pas accès aux missions');
 select pg_temp.en('10000000-0000-4000-8000-000000000003');
 select is((select count(*)::int from public.missions) + (select count(*)::int from public.points_avancement), 0,
           'associé : aucune mission ni point d''avancement visible');

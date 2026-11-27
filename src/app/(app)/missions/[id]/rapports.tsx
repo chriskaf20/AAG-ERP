@@ -109,9 +109,10 @@ export function RapportsMission({ fiche }: { fiche: FicheMission }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.url} alt={p.legende ?? `Photo ${index + 1} du rapport`} className="aspect-square w-full rounded-md object-cover" loading="lazy" />
             </a> : <p>Photo indisponible</p>}</li>)}</ul>}
-          {actif && fiche.peut_rediger && r.id === brouillon?.id && mission.type === "terrain" && <>
-            <DepotPhotos rapport={r} onChargement={setDepotActif} />
-            {!depotActif && <SaisieSignature label="Faire signer le client" envoyer={terminerRapport.bind(null, mission.id, r.id)} />}
+          {actif && r.id === brouillon?.id && mission.type === "terrain" && <>
+            {fiche.peut_rediger && <DepotPhotos rapport={r} onChargement={setDepotActif} />}
+            {fiche.peut_signer && !depotActif &&
+              <SaisieSignature label="Faire signer le client" envoyer={terminerRapport.bind(null, mission.id, r.id)} />}
           </>}
           {actif && fiche.peut_valider && r.id === brouillon?.id && mission.type === "interne" &&
             <FormulaireOperation bouton="Valider le rapport" enregistrer={() => terminerRapport(mission.id, r.id)} />}

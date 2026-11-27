@@ -23,6 +23,7 @@ export type FicheMission = {
   agents: { user_id: string; nom: string | null }[]
   rapports: RapportMission[]
   peut_rediger: boolean
+  peut_signer: boolean
   peut_gerer: boolean
   peut_valider: boolean
 }
