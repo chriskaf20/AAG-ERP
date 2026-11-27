@@ -1,4 +1,5 @@
 import type { Tables } from "@/lib/database.types"
+import { FUSEAU_HORAIRE } from "./format"
 
 export type MissionResume = Pick<Tables<"missions">, "id" | "type" | "titre" | "lieu" | "debut" | "fin" | "statut" | "dossier_id"> & {
   dossier: string
@@ -26,6 +27,21 @@ export type FicheMission = {
   peut_signer: boolean
   peut_gerer: boolean
   peut_valider: boolean
+}
+
+const dateMission = new Intl.DateTimeFormat("sv-SE", { timeZone: FUSEAU_HORAIRE, year: "numeric", month: "2-digit", day: "2-digit" })
+
+export function missionsAujourdhui<T extends Pick<MissionResume, "debut" | "fin">>(missions: T[], maintenant = new Date()) {
+  const jour = dateMission.format(maintenant)
+  const aujourdHui: T[] = []
+  const autres: T[] = []
+  for (const mission of missions) {
+    const debut = dateMission.format(new Date(mission.debut))
+    const fin = mission.fin ? dateMission.format(new Date(mission.fin)) : debut
+    const groupe = debut <= jour && jour <= fin ? aujourdHui : autres
+    groupe.push(mission)
+  }
+  return { aujourdHui, autres }
 }
 
 export const STATUT_MISSION = { planifiee: "Planifiée", en_cours: "En cours", terminee: "Terminée", annulee: "Annulée" }

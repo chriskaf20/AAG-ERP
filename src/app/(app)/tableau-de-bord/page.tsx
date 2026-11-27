@@ -21,10 +21,11 @@ import { StatutBadge } from "@/components/statut-badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { getContexte, getOrgId, getSupabase } from "@/lib/contexte"
-import { formatDate, formatMontant } from "@/lib/format"
+import { formatDate, formatDateHeure, formatMontant } from "@/lib/format"
 import type { Indicateurs } from "@/lib/indicateurs"
 import { cartesIndicateurs } from "@/lib/indicateurs-cartes"
 import { accueil } from "@/lib/navigation"
+import type { MissionResume } from "@/lib/missions"
 import { a, aUne, LECTURE_DOSSIERS, STATUTS, STATUTS_TERMINAUX, type DossierStatut } from "@/lib/permissions"
 
 export const metadata: Metadata = { title: "Tableau de bord" }
@@ -59,6 +60,9 @@ export default async function TableauDeBord() {
     factures: { id: string; type: string; statut: string; solde_du: number | null; devise: string; taux_cdf: number; echeance: string | null }[] | null
     notifications: { id: string; titre: string; message: string | null; lien: string | null }[]
     indicateurs: Indicateurs | null
+    missions_jour: MissionResume[] | null
+    reserves_echeance: { id: string; description: string; date_limite: string; dossier_id: string; numero: string }[] | null
+    points_retard: { id: string; numero: string; client: string | null; dernier_point: string | null; depuis: string }[] | null
   }
   const dossiers = acc.dossiers
   const verifs = acc.verifs
@@ -67,6 +71,21 @@ export default async function TableauDeBord() {
   const factures = acc.factures
   const notifs = acc.notifications
   const ind = acc.indicateurs
+
+  const alertes = [
+    { titre: "Missions du jour", elements: (acc.missions_jour ?? []).map(m => ({
+      id: m.id, titre: m.titre, detail: formatDateHeure(m.debut), href: "/missions/" + m.id,
+    })) },
+    { titre: "Réserves à échéance", elements: (acc.reserves_echeance ?? []).map(r => ({
+      id: r.id, titre: r.numero + " · " + r.description, detail: "Échéance le " + formatDate(r.date_limite),
+      href: "/dossiers/" + r.dossier_id + "?onglet=reception",
+    })) },
+    { titre: "Points d’avancement en retard", elements: (acc.points_retard ?? []).map(d => ({
+      id: d.id, titre: [d.numero, d.client].filter(Boolean).join(" · "),
+      detail: d.dernier_point ? "Dernier point le " + formatDate(d.dernier_point) : "En cours depuis le " + formatDate(d.depuis),
+      href: "/dossiers/" + d.id + "?onglet=execution",
+    })) },
+  ].filter(groupe => groupe.elements.length > 0)
 
   const liste = dossiers ?? []
   const nb = (s: DossierStatut) => liste.filter((d) => d.statut === s).length
@@ -161,6 +180,18 @@ export default async function TableauDeBord() {
       <PageBody>
         {cartes.length > 0 && <SectionCards cartes={cartes.slice(0, 8)} />}
         {ind && <SectionCards cartes={cartesIndicateurs(ind)} />}
+
+        {alertes.length > 0 && <Section className="grid gap-4 lg:grid-cols-3">
+          {alertes.map(groupe => <Card key={groupe.titre}>
+            <CardHeader><CardTitle>{groupe.titre}</CardTitle></CardHeader>
+            <CardContent><ul className="grid gap-3 text-sm">
+              {groupe.elements.map(element => <li key={element.id}>
+                <Link href={element.href} className="font-medium underline underline-offset-2">{element.titre}</Link>
+                <p className="text-muted-foreground">{element.detail}</p>
+              </li>)}
+            </ul></CardContent>
+          </Card>)}
+        </Section>}
 
         {(notifs?.length ?? 0) > 0 && (
           <Section>
