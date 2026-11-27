@@ -47,6 +47,7 @@ const PAGES: [string, Regle, boolean][] = [
   ["/dossiers/nouveau", ["dossiers.create"], true],
   ["/clients", ["clients.read"], true],
   ["/clients/nouveau", ["clients.write"], false],
+  ["/achats", ["achats.read"], true],
   ["/fournisseurs", LECTURE_FOURNISSEURS, true],
   ["/finance", ["factures.write"], true],
   ["/devis", ["devis.read"], true],

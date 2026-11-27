@@ -50,6 +50,9 @@ export default async function TableauDeBord() {
   const p = ctx.permissions
   if (accueil(p) !== "/tableau-de-bord") redirect(accueil(p))
 
+  const bonsAValider = a(p, "achats.validate") ? await supabase.from("bons_commande")
+    .select("id, objet, devise, total_ttc").eq("organization_id", orgId).eq("statut", "a_valider").order("created_at") : null
+  if (bonsAValider?.error) throw bonsAValider.error
   const lit = aUne(p, ...LECTURE_DOSSIERS)
   type Cli = { raison_sociale: string } | null
   const acc = (brut ?? {}) as unknown as {
@@ -180,6 +183,16 @@ export default async function TableauDeBord() {
       <PageBody>
         {cartes.length > 0 && <SectionCards cartes={cartes.slice(0, 8)} />}
         {ind && <SectionCards cartes={cartesIndicateurs(ind)} />}
+
+        {!!bonsAValider?.data?.length && <Section><Card>
+          <CardHeader><CardTitle>Bons de commande à valider</CardTitle></CardHeader>
+          <CardContent><ul className="grid gap-2 text-sm">
+            {bonsAValider.data.map(bon => <li key={bon.id}>
+              <Link className="font-medium underline" href={"/achats#" + bon.id}>{bon.objet}</Link>
+              {" · " + formatMontant(bon.total_ttc, bon.devise)}
+            </li>)}
+          </ul></CardContent>
+        </Card></Section>}
 
         {alertes.length > 0 && <Section className="grid gap-4 lg:grid-cols-3">
           {alertes.map(groupe => <Card key={groupe.titre}>

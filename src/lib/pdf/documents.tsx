@@ -639,3 +639,42 @@ export async function pdfIntervention({ mission, rapport, signature, photos, org
     </Page>
   </Document>)
 }
+
+
+export type CommandePdfProps = {
+  org: OrgPdf
+  fournisseur: ClientPdf
+  dossierNumero: string | null
+  bon: Pick<Tables<"bons_commande">, "numero" | "objet" | "emis_le" | "valide_le">
+  lignes: Pick<Tables<"bon_commande_lignes">, "id" | "description" | "quantite" | "prix_unitaire">[]
+  totaux: TotauxPdf
+}
+
+export async function pdfCommande({ org, fournisseur, dossierNumero, bon, lignes, totaux }: CommandePdfProps) {
+  return renderToBuffer(<Document title={"Bon de commande " + (bon.numero ?? "")}>
+    <Page size="A4" style={s.page}>
+      <Entete org={org} logo={await logo()} />
+      <View style={s.bandeau}>
+        <Text style={s.titre}>Bon de commande</Text><Text style={s.numero}>{bon.numero}</Text>
+      </View>
+      <View style={s.blocs}>
+        <BlocClient client={fournisseur} titre="Fournisseur" />
+        <View style={s.bloc}>
+          <Text style={s.gras}>{bon.objet}</Text>
+          <Text>{dossierNumero ?? "Achat de fonctionnement"}</Text>
+          {bon.emis_le && <Text>Émis le {dateHeurePdf(bon.emis_le)}</Text>}
+          {bon.valide_le && <Text>Validé par le gérant le {dateHeurePdf(bon.valide_le)}</Text>}
+        </View>
+      </View>
+      <View style={s.table}>
+        <View style={s.ligneEntete}><Text style={s.cDesc}>Description</Text><Text style={s.cQte}>Quantité</Text><Text style={s.cPu}>Prix unitaire HT</Text></View>
+        {lignes.map(l => <View key={l.id} style={s.ligne}>
+          <Text style={s.cDesc}>{l.description}</Text><Text style={s.cQte}>{l.quantite}</Text>
+          <Text style={s.cPu}>{montantPdf(l.prix_unitaire, totaux.devise)}</Text>
+        </View>)}
+      </View>
+      <Totaux t={totaux} />
+      <Pied org={org} />
+    </Page>
+  </Document>)
+}

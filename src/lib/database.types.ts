@@ -208,6 +208,158 @@ export type Database = {
           },
         ]
       }
+      bons_commande: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department_id: string
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id: string | null
+          emis_le: string | null
+          fournisseur_id: string
+          id: string
+          motif_annulation: string | null
+          numero: string | null
+          objet: string
+          organization_id: string
+          statut: string
+          taux_cdf: number
+          taxes: Json
+          total_ht: number
+          total_ttc: number
+          updated_at: string
+          valide_le: string | null
+          valide_par: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department_id: string
+          devise: Database["public"]["Enums"]["devise"]
+          dossier_id?: string | null
+          emis_le?: string | null
+          fournisseur_id: string
+          id?: string
+          motif_annulation?: string | null
+          numero?: string | null
+          objet: string
+          organization_id: string
+          statut?: string
+          taux_cdf: number
+          taxes: Json
+          total_ht: number
+          total_ttc: number
+          updated_at?: string
+          valide_le?: string | null
+          valide_par?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string
+          devise?: Database["public"]["Enums"]["devise"]
+          dossier_id?: string | null
+          emis_le?: string | null
+          fournisseur_id?: string
+          id?: string
+          motif_annulation?: string | null
+          numero?: string | null
+          objet?: string
+          organization_id?: string
+          statut?: string
+          taux_cdf?: number
+          taxes?: Json
+          total_ht?: number
+          total_ttc?: number
+          updated_at?: string
+          valide_le?: string | null
+          valide_par?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bons_commande_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bons_commande_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bons_commande_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bons_commande_organization_id_fournisseur_id_fkey"
+            columns: ["organization_id", "fournisseur_id"]
+            isOneToOne: false
+            referencedRelation: "fournisseurs"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      bon_commande_lignes: {
+        Row: {
+          bon_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          ordre: number
+          organization_id: string
+          prix_unitaire: number
+          quantite: number
+          updated_at: string
+        }
+        Insert: {
+          bon_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          ordre: number
+          organization_id: string
+          prix_unitaire: number
+          quantite: number
+          updated_at?: string
+        }
+        Update: {
+          bon_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          ordre?: number
+          organization_id?: string
+          prix_unitaire?: number
+          quantite?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bon_commande_lignes_organization_id_bon_id_fkey"
+            columns: ["organization_id", "bon_id"]
+            isOneToOne: false
+            referencedRelation: "bons_commande"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "bon_commande_lignes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       livrables: {
         Row: {
           created_at: string
@@ -3094,6 +3246,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      enregistrer_bon_commande: {
+        Args: { p_org: string; p_fournisseur: string; p_departement: string; p_dossier: string | null; p_objet: string; p_devise: Database["public"]["Enums"]["devise"]; p_lignes: Json; p_bon?: string }
+        Returns: string
+      }
+      transition_bon_commande: {
+        Args: { p_org: string; p_bon: string; p_action: string; p_motif?: string }
+        Returns: undefined
+      }
       confirmer_envoi_point: { Args: { p_erreur?: string; p_ok: boolean; p_point: string }; Returns: undefined }
       creer_lien_pv_reception: { Args: { p_pv: string }; Returns: string }
       enregistrer_point_avancement: { Args: { p_dossier: string; p_texte: string }; Returns: Json }

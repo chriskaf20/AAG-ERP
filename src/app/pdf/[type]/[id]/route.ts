@@ -2,8 +2,8 @@ import { NextResponse, type NextRequest } from "next/server"
 import { z } from "zod"
 import { getOrgId } from "@/lib/contexte"
 
-import { pdfDevis, pdfFacture, pdfRecu, pdfReception, pdfIntervention } from "@/lib/pdf/documents"
-import { donneesDevis, donneesFacture, donneesRecu, donneesReception, donneesIntervention } from "@/lib/pdf/donnees"
+import { pdfDevis, pdfFacture, pdfRecu, pdfReception, pdfIntervention, pdfCommande } from "@/lib/pdf/documents"
+import { donneesDevis, donneesFacture, donneesRecu, donneesReception, donneesIntervention, donneesCommande } from "@/lib/pdf/donnees"
 import { createClient } from "@/lib/supabase/server"
 
 export const runtime = "nodejs"
@@ -49,6 +49,14 @@ export async function GET(request: NextRequest, { params }: RouteContext<"/pdf/[
     if (d) {
       pdf = await pdfIntervention(d)
       nom = "Rapport-" + d.dossierNumero + "-v" + d.rapport.version
+    }
+  } else if (type === "commandes") {
+    const orgId = await getOrgId()
+    if (!z.uuid().safeParse(orgId).success) return new NextResponse("Document introuvable", { status: 404 })
+    const d = await donneesCommande(db, id, orgId)
+    if (d) {
+      pdf = await pdfCommande(d)
+      nom = d.bon.numero ?? "bon-de-commande"
     }
   }
   if (!pdf) return new NextResponse("Document introuvable", { status: 404 })

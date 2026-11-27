@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 
 import type { Database } from "@/lib/database.types"
 import type { FicheMission } from "@/lib/missions"
-import type { ClientPdf, InterventionPdfProps, ReceptionPdfProps, DevisPdfProps, FacturePdfProps, OrgPdf, RecuPdfProps, TotauxPdf } from "./documents"
+import type { ClientPdf, CommandePdfProps, InterventionPdfProps, ReceptionPdfProps, DevisPdfProps, FacturePdfProps, OrgPdf, RecuPdfProps, TotauxPdf } from "./documents"
 
 type Db = SupabaseClient<Database>
 
@@ -158,5 +158,29 @@ export async function donneesIntervention(db: Db, id: string, orgId: string): Pr
     signature: rapport.signature && {
       nom: rapport.signature.nom, signe_le: rapport.signature.signe_le, image_png: rapport.signature.image,
     },
+  }
+}
+
+
+export async function donneesCommande(db: Db, id: string, orgId: string): Promise<CommandePdfProps | null> {
+  const { data: bon, error } = await db.from("bons_commande").select("*")
+    .eq("id", id).eq("organization_id", orgId).maybeSingle()
+  if (error) throw error
+  if (!bon?.numero || !bon.emis_le) return null
+  const [org, fournisseur, lignes, dossier] = await Promise.all([
+    db.from("organizations").select("nom, sigle, rccm, nif, id_nat, adresse, telephone, email").eq("id", orgId).maybeSingle(),
+    db.from("fournisseurs").select("nom, rccm, nif, contact, email, telephone").eq("id", bon.fournisseur_id)
+      .eq("organization_id", orgId).maybeSingle(),
+    db.from("bon_commande_lignes").select("id, description, quantite, prix_unitaire").eq("bon_id", bon.id)
+      .eq("organization_id", orgId).order("ordre"),
+    bon.dossier_id ? db.from("dossiers").select("numero").eq("id", bon.dossier_id).eq("organization_id", orgId).maybeSingle() : null,
+  ])
+  for (const resultat of [org, fournisseur, lignes, dossier]) if (resultat?.error) throw resultat.error
+  if (!org.data || !fournisseur.data || !lignes.data) return null
+  const f = fournisseur.data
+  return {
+    org: org.data, fournisseur: { ...f, raison_sociale: f.nom, adresse: null, id_nat: null },
+    dossierNumero: dossier?.data?.numero ?? null, bon, lignes: lignes.data,
+    totaux: { ...bon, total_brut: bon.total_ht, total_remise: 0, total_taxes: bon.total_ttc - bon.total_ht, taxes: taxes(bon.taxes) },
   }
 }
