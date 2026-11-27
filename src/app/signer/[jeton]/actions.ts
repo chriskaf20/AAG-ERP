@@ -41,7 +41,7 @@ export async function signer(entree: z.input<typeof schema>): Promise<EtatSignat
     try {
       await archiverDevisSigne(res.objet_id)
     } catch {
-      // la signature est enregistrée ; l'archive PDF pourra être régénérée
+      console.warn("Archivage de devis à reprendre", res.objet_id)
     }
   }
   return { ok: true, message: "Merci, votre signature a bien été enregistrée." }

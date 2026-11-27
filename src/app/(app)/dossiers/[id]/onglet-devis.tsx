@@ -23,6 +23,7 @@ import {
   nouvelleVersionDevis,
   refuserDevis,
   regenererLienDevis,
+  reprendreArchiveDevis,
   soumettreDevis,
   supprimerDevis,
   supprimerLigneDevis,
@@ -33,7 +34,7 @@ import type { Tables } from "@/lib/database.types"
 import type { DroitsDossier } from "@/lib/permissions"
 import { formatDate, formatDateHeure, formatMontant } from "@/lib/format"
 
-export type DevisVue = Tables<"devis"> & { lignes: Ligne[]; signataire: string | null }
+export type DevisVue = Tables<"devis"> & { lignes: Ligne[]; signataire: string | null; archiveId: string | null }
 
 export function OngletDevis({
   dossierId,
@@ -171,6 +172,16 @@ function CarteDevis({
           </Alert>
         )}
 
+        {d.statut === "signe" && (d.archiveId ? (
+          <a href={`/documents/${d.archiveId}?telecharger`} className="self-start text-sm underline">Télécharger le devis signé archivé</a>
+        ) : <Alert>
+          <AlertTriangleIcon />
+          <AlertDescription>
+            L’archive du devis signé est en attente.
+            {pilote && <Button type="button" variant="outline" size="sm" className="mt-2 self-start" disabled={enCours}
+              onClick={() => run(() => reprendreArchiveDevis(d.id, dossierId))}>Reprendre l’archivage</Button>}
+          </AlertDescription>
+        </Alert>)}
         {modifiable && <EnteteDevis d={d} dossierId={dossierId} />}
 
         <EditeurLignes

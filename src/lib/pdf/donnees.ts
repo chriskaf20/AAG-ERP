@@ -2,7 +2,7 @@ import "server-only"
 
 import type { SupabaseClient } from "@supabase/supabase-js"
 
-import type { Database } from "@/lib/database.types"
+import type { Database, Tables } from "@/lib/database.types"
 import type { FicheMission } from "@/lib/missions"
 import type { ClientPdf, CommandePdfProps, InterventionPdfProps, ReceptionPdfProps, DevisPdfProps, FacturePdfProps, OrgPdf, RecuPdfProps, TotauxPdf } from "./documents"
 
@@ -43,22 +43,25 @@ function taxes(v: unknown): TotauxPdf["taxes"] {
   return Array.isArray(v) ? (v as TotauxPdf["taxes"]) : []
 }
 
-export async function donneesDevis(db: Db, devisId: string): Promise<DevisPdfProps | null> {
-  const { data: d } = await db.from("devis").select("*").eq("id", devisId).maybeSingle()
+export async function donneesDevis(db: Db, devisId: string): Promise<(DevisPdfProps & { devis: Tables<"devis"> }) | null> {
+  const { data: d, error } = await db.from("devis").select("*").eq("id", devisId).maybeSingle()
+  if (error) throw error
   if (!d) return null
-  const [ctx, { data: lignes }, { data: sig }] = await Promise.all([
+  const [ctx, lignes, sig] = await Promise.all([
     contexteDossier(db, d.dossier_id),
     db.from("devis_lignes").select("*").eq("devis_id", d.id).order("ordre").order("created_at"),
     d.signature_id
       ? db.from("signatures").select("nom_signataire, signe_le, image_png, ip").eq("id", d.signature_id).maybeSingle()
-      : Promise.resolve({ data: null }),
+      : Promise.resolve({ data: null, error: null }),
   ])
+  if (lignes.error) throw lignes.error
+  if (sig.error) throw sig.error
   return {
     ...ctx,
     devis: d,
     totaux: { ...d, devise: d.devise, taxes: taxes(d.taxes) },
-    lignes: (lignes ?? []).map((l) => ({ ...l, montant_ht: l.montant_ht ?? 0, unite: UNITES[l.unite] ?? l.unite })),
-    signature: sig ? { nom: sig.nom_signataire, signe_le: sig.signe_le, image_png: sig.image_png, ip: sig.ip as string | null } : null,
+    lignes: lignes.data.map((l) => ({ ...l, montant_ht: l.montant_ht ?? 0, unite: UNITES[l.unite] ?? l.unite })),
+    signature: sig.data ? { nom: sig.data.nom_signataire, signe_le: sig.data.signe_le, image_png: sig.data.image_png, ip: sig.data.ip as string | null } : null,
   }
 }
 

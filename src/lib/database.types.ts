@@ -2227,6 +2227,7 @@ export type Database = {
       }
       documents: {
         Row: {
+          devis_archive_id: string | null
           bucket: string
           chemin: string
           client_id: string | null
@@ -2248,6 +2249,7 @@ export type Database = {
           version_precedente_id: string | null
         }
         Insert: {
+          devis_archive_id?: string | null
           bucket: string
           chemin: string
           client_id?: string | null
@@ -2269,6 +2271,7 @@ export type Database = {
           version_precedente_id?: string | null
         }
         Update: {
+          devis_archive_id?: string | null
           bucket?: string
           chemin?: string
           client_id?: string | null
@@ -2295,6 +2298,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_devis_archive_id_fkey"
+            columns: ["devis_archive_id"]
+            isOneToOne: true
+            referencedRelation: "devis"
             referencedColumns: ["id"]
           },
           {
@@ -3650,6 +3660,10 @@ export type Database = {
     Functions: {
       preparer_invitation: {
         Args: { p_org: string; p_email: string; p_nom: string; p_fonction: string | null; p_role: Database["public"]["Enums"]["app_role"]; p_departement: string | null }
+        Returns: string
+      }
+      consigner_archive_devis: {
+        Args: { p_devis: string; p_chemin: string; p_nom: string; p_taille: number }
         Returns: string
       }
       invitation_rattachee: { Args: { p_invitation: string; p_user: string }; Returns: boolean }

@@ -15,6 +15,7 @@ export async function chargerFinanceDossier(ctx: Contexte, dossierId: string) {
     { data: pvs },
     { data: factures },
     { data: relances },
+    archives,
   ] = await Promise.all([
     supabase
       .from("devis")
@@ -36,14 +37,18 @@ export async function chargerFinanceDossier(ctx: Contexte, dossierId: string) {
       .eq("dossier_id", dossierId)
       .order("created_at"),
     supabase.from("relances").select("*").eq("dossier_id", dossierId).order("envoyee_le", { ascending: false }),
+    supabase.from("documents").select("id, devis_archive_id").eq("dossier_id", dossierId).eq("type", "devis").eq("est_signe", true),
   ])
 
   const trierLignes = <T extends { ordre: number; created_at: string }>(l: T[]) =>
     [...l].sort((a, b) => a.ordre - b.ordre || a.created_at.localeCompare(b.created_at))
 
+  if (archives.error) throw archives.error
+  const archiveParDevis = new Map(archives.data.map(a => [a.devis_archive_id, a.id]))
   const devisVue: DevisVue[] = (devis ?? []).map(({ devis_lignes, signatures, ...d }) => ({
     ...d,
     lignes: trierLignes(devis_lignes).map((l) => ({ ...l, montant_ht: l.montant_ht ?? 0 })) as Ligne[],
+    archiveId: archiveParDevis.get(d.id) ?? null,
     signataire: (signatures as { nom_signataire: string } | null)?.nom_signataire ?? null,
   }))
 

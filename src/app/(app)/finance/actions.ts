@@ -6,7 +6,9 @@ import { z } from "zod"
 
 import { messageErreur, type EtatAction } from "@/lib/actions"
 import { autoriser, getContexte } from "@/lib/contexte"
+import { archiverDevisSigne } from "@/lib/documents-figes"
 import type { Enums } from "@/lib/database.types"
+import type { DroitsDossier } from "@/lib/permissions"
 
 export type Resultat<T = undefined> = EtatAction & { data?: T }
 
@@ -39,6 +41,27 @@ async function rpc<T>(nom: string, args: Record<string, unknown>, dossierId?: st
 // ---------------------------------------------------------------------------
 // Devis
 // ---------------------------------------------------------------------------
+export async function reprendreArchiveDevis(devisId: string, dossierId: string): Promise<Resultat<string>> {
+  const { ctx, refus } = await autoriser("devis.write")
+  if (refus) return refus
+  if (!uuid.safeParse(devisId).success || !uuid.safeParse(dossierId).success) return { message: "Devis introuvable." }
+  const [devis, droits] = await Promise.all([
+    ctx.supabase.from("devis").select("id").eq("id", devisId).eq("dossier_id", dossierId)
+      .eq("organization_id", ctx.organisation.id).eq("statut", "signe").maybeSingle(),
+    ctx.supabase.rpc("droits_dossier", { p_dossier: dossierId }),
+  ])
+  if (devis.error || droits.error || !devis.data || !(droits.data as unknown as DroitsDossier)?.devis_write) {
+    return { message: "Archivage réservé aux responsables habilités pour ce devis signé." }
+  }
+  try {
+    const id = await archiverDevisSigne(devisId)
+    rafraichir(dossierId)
+    return { ok: true, message: "Devis signé archivé", data: id }
+  } catch {
+    return { message: "Archivage indisponible. Le devis signé est conservé. Réessayez depuis cette fiche." }
+  }
+}
+
 export async function creerDevis(dossierId: string): Promise<Resultat<string>> {
   const garde = await autoriser("devis.write")
   if (garde.refus) return garde.refus

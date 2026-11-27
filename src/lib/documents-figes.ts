@@ -1,40 +1,49 @@
 import "server-only"
 
+import { conserverArchive } from "@/lib/archivage"
 import { pdfDevis } from "@/lib/pdf/documents"
 import { donneesDevis } from "@/lib/pdf/donnees"
 import { createAdminClient } from "@/lib/supabase/admin"
 
-/**
- * Après signature : génère le PDF du devis signé et l'archive dans le dossier
- * (document signé = jamais modifié).
- */
 export async function archiverDevisSigne(devisId: string) {
   const admin = createAdminClient()
-  const donnees = await donneesDevis(admin, devisId)
-  if (!donnees) return
-  const { data: d } = await admin
-    .from("devis")
-    .select("organization_id, dossier_id, numero, version")
-    .eq("id", devisId)
-    .single()
-  if (!d) return
-  const pdf = await pdfDevis(donnees)
-  const nom = `${d.numero}-v${d.version}-signe.pdf`
-  const chemin = `${d.organization_id}/${donnees.dossierNumero}/devis/${Date.now()}-${nom}`
-  const { error } = await admin.storage
-    .from("dossiers")
-    .upload(chemin, pdf, { contentType: "application/pdf", upsert: false })
-  if (error) throw error
-  await admin.from("documents").insert({
-    organization_id: d.organization_id,
-    dossier_id: d.dossier_id,
-    type: "devis",
-    libelle: `Devis ${d.numero} v${d.version} signé`,
-    bucket: "dossiers",
-    chemin,
-    nom_fichier: nom,
-    mime_type: "application/pdf",
-    taille: pdf.length,
-    est_signe: true,
+  const stockage = admin.storage.from("dossiers")
+
+  return conserverArchive({
+    async chercher() {
+      const { data, error } = await admin.from("documents").select("id").eq("devis_archive_id", devisId).maybeSingle()
+      if (error) throw error
+      return data?.id ?? null
+    },
+    async preparer() {
+      const donnees = await donneesDevis(admin, devisId)
+      if (!donnees || donnees.devis.statut !== "signe" || !donnees.signature || !donnees.lignes.length) {
+        throw new Error("Le devis signé complet est introuvable")
+      }
+      const d = donnees.devis
+      return {
+        chemin: `${d.organization_id}/${donnees.dossierNumero}/archives-devis/${devisId}.pdf`,
+        nom: `${d.numero}-v${d.version}-signe.pdf`,
+        pdf: await pdfDevis(donnees),
+      }
+    },
+    async deposer(chemin, pdf) {
+      const { error } = await stockage.upload(chemin, pdf, { contentType: "application/pdf", upsert: false })
+      if (error) throw error
+    },
+    async lireTaille(chemin) {
+      const { data, error } = await stockage.download(chemin)
+      if (error) throw error
+      if (!data?.size) throw new Error("L’archive est introuvable")
+      return data.size
+    },
+    async consigner(chemin, nom, taille) {
+      const { data, error } = await admin.rpc("consigner_archive_devis", {
+        p_devis: devisId, p_chemin: chemin, p_nom: nom, p_taille: taille,
+      })
+      if (error) throw error
+      if (!data) throw new Error("Archivage incomplet")
+      return data
+    },
   })
 }
