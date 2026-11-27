@@ -72,6 +72,7 @@ export function OngletReception({ dossier, pvs, lignes, reserves, avis, receptio
           <Badge variant="outline">{p.refuse_le ? "Refusé" : p.signe_le ? "Signé" : "En préparation"}</Badge>
         </CardTitle></CardHeader>
         <CardContent className="grid gap-4 text-sm">
+          <a href={"/pdf/receptions/" + p.id} target="_blank" rel="noreferrer" className="w-fit underline">Ouvrir le PV PDF</a>
           <p>{formatDate(p.date_reception)}{p.lieu && ` · ${p.lieu}`}{p.decision && ` · ${DECISIONS_PV[p.decision]}`}</p>
           {p.observations && <p className="whitespace-pre-wrap">{p.observations}</p>}
           {p.motif_refus && <p>Motif du refus — {p.motif_refus}</p>}

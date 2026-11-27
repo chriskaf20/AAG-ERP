@@ -3,7 +3,8 @@ import "server-only"
 import type { SupabaseClient } from "@supabase/supabase-js"
 
 import type { Database } from "@/lib/database.types"
-import type { ClientPdf, DevisPdfProps, FacturePdfProps, OrgPdf, RecuPdfProps, TotauxPdf } from "./documents"
+import type { FicheMission } from "@/lib/missions"
+import type { ClientPdf, InterventionPdfProps, ReceptionPdfProps, DevisPdfProps, FacturePdfProps, OrgPdf, RecuPdfProps, TotauxPdf } from "./documents"
 
 type Db = SupabaseClient<Database>
 
@@ -88,5 +89,74 @@ export async function donneesRecu(db: Db, paiementId: string): Promise<RecuPdfPr
     ...ctx,
     paiement: { ...p, mode: MODES[p.mode] ?? p.mode },
     facture: { ...p.factures, solde_du: p.factures.solde_du ?? 0 },
+  }
+}
+
+
+export async function donneesReception(db: Db, id: string, orgId: string): Promise<ReceptionPdfProps | null> {
+  const { data: pv, error } = await db.from("pv_reception").select("*")
+    .eq("id", id).eq("organization_id", orgId).maybeSingle()
+  if (error) throw error
+  if (!pv) return null
+
+  async function signature(id: string | null) {
+    if (!id) return null
+    const { data, error } = await db.from("signatures").select("nom_signataire, signe_le, image_png")
+      .eq("id", id).eq("organization_id", orgId).maybeSingle()
+    if (error) throw error
+    return data ? { nom: data.nom_signataire, signe_le: data.signe_le, image_png: data.image_png } : null
+  }
+
+  const [ctx, lignes, reserves, atlas, signataireClient] = await Promise.all([
+    contexteDossier(db, pv.dossier_id),
+    db.from("pv_reception_lignes").select("id, libelle, resultat, observation")
+      .eq("pv_id", id).order("ordre").order("created_at"),
+    db.from("reserves").select("id, description, date_limite, statut, levee_le, commentaire_levee")
+      .eq("pv_id", id).order("created_at"),
+    signature(pv.signature_atlas_id),
+    signature(pv.signature_client_id),
+  ])
+  if (lignes.error) throw lignes.error
+  if (reserves.error) throw reserves.error
+  return { ...ctx, pv, lignes: lignes.data, reserves: reserves.data, atlas, signataireClient }
+}
+
+export async function donneesIntervention(db: Db, id: string, orgId: string): Promise<InterventionPdfProps | null> {
+  const { data: ref, error } = await db.from("rapports_intervention").select("mission_id")
+    .eq("id", id).eq("organization_id", orgId).maybeSingle()
+  if (error) throw error
+  if (!ref) return null
+
+  const [ficheRpc, organisation] = await Promise.all([
+    db.rpc("mission_detail", { p_mission: ref.mission_id }),
+    db.from("organizations").select("nom, sigle, rccm, nif, id_nat, adresse, telephone, email")
+      .eq("id", orgId).maybeSingle(),
+  ])
+  if (ficheRpc.error) throw ficheRpc.error
+  if (organisation.error) throw organisation.error
+  const fiche = ficheRpc.data as unknown as FicheMission | null
+  if (!fiche || fiche.mission.organization_id !== orgId || !organisation.data) return null
+  const rapport = fiche.rapports.find(r => r.id === id)
+  if (!rapport) return null
+
+  const photos: InterventionPdfProps["photos"] = []
+  for (const photo of rapport.photos) {
+    const { data } = await db.storage.from("terrain").download(photo.chemin)
+    photos.push({
+      id: photo.id,
+      libelle: photo.legende ?? "Photo " + (photos.length + 1),
+      jpeg: data ? Buffer.from(await data.arrayBuffer()) : null,
+    })
+  }
+  return {
+    org: organisation.data, dossierNumero: fiche.dossier.numero, mission: fiche.mission, rapport, photos,
+    client: {
+      raison_sociale: fiche.client.raison_sociale ?? "Client",
+      adresse: [fiche.client.adresse, fiche.client.ville].filter(Boolean).join(", ") || null,
+      telephone: fiche.client.telephone, rccm: null, nif: null, id_nat: null, email: null, contact: null,
+    },
+    signature: rapport.signature && {
+      nom: rapport.signature.nom, signe_le: rapport.signature.signe_le, image_png: rapport.signature.image,
+    },
   }
 }

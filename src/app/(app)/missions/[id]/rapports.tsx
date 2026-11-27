@@ -34,6 +34,7 @@ export function RapportsMission({ fiche }: { fiche: FicheMission }) {
             <span className="font-medium">Version {r.version}</span>
             <Badge variant="outline">{r.signe_le ? "Signé par le client" : r.valide_le ? "Validé" : "Brouillon"}</Badge>
           </div>
+          <a href={"/pdf/interventions/" + r.id} target="_blank" rel="noreferrer" className="w-fit underline">Ouvrir le rapport PDF</a>
           <p className="whitespace-pre-wrap">{r.travaux}</p>
           {r.observations && <p className="whitespace-pre-wrap">{r.observations}</p>}
           {r.redacteur && <p>Rédigé par {r.redacteur}</p>}

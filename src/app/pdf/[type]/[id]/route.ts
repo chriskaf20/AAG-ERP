@@ -1,14 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server"
+import { z } from "zod"
+import { getOrgId } from "@/lib/contexte"
 
-import { pdfDevis, pdfFacture, pdfRecu } from "@/lib/pdf/documents"
-import { donneesDevis, donneesFacture, donneesRecu } from "@/lib/pdf/donnees"
+import { pdfDevis, pdfFacture, pdfRecu, pdfReception, pdfIntervention } from "@/lib/pdf/documents"
+import { donneesDevis, donneesFacture, donneesRecu, donneesReception, donneesIntervention } from "@/lib/pdf/donnees"
 import { createClient } from "@/lib/supabase/server"
 
 export const runtime = "nodejs"
 
-/** PDF devis / facture / reçu, générés à la demande (accès contrôlé par la RLS). */
+/** Documents générés à la demande avec la session de l’utilisateur. */
 export async function GET(request: NextRequest, { params }: RouteContext<"/pdf/[type]/[id]">) {
   const { type, id } = await params
+  if (!z.uuid().safeParse(id).success) return new NextResponse("Document introuvable", { status: 404 })
   const db = await createClient()
 
   let pdf: Buffer | null = null
@@ -30,6 +33,22 @@ export async function GET(request: NextRequest, { params }: RouteContext<"/pdf/[
     if (d) {
       pdf = await pdfRecu(d)
       nom = d.paiement.numero_recu
+    }
+  } else if (type === "receptions") {
+    const orgId = await getOrgId()
+    if (!z.uuid().safeParse(orgId).success) return new NextResponse("Document introuvable", { status: 404 })
+    const d = await donneesReception(db, id, orgId)
+    if (d) {
+      pdf = await pdfReception(d)
+      nom = d.pv.type + "-" + d.dossierNumero + "-v" + d.pv.version
+    }
+  } else if (type === "interventions") {
+    const orgId = await getOrgId()
+    if (!z.uuid().safeParse(orgId).success) return new NextResponse("Document introuvable", { status: 404 })
+    const d = await donneesIntervention(db, id, orgId)
+    if (d) {
+      pdf = await pdfIntervention(d)
+      nom = "Rapport-" + d.dossierNumero + "-v" + d.rapport.version
     }
   }
   if (!pdf) return new NextResponse("Document introuvable", { status: 404 })

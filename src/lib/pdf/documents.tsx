@@ -12,6 +12,10 @@ import {
   View,
 } from "@react-pdf/renderer"
 
+import type { Tables } from "@/lib/database.types"
+import type { RapportMission } from "@/lib/missions"
+import { DECISIONS_PV, RESULTATS_PV } from "@/lib/reception"
+
 const MARINE = "#0B1F4B"
 const OR = "#C9A13B"
 const GRIS = "#5b6478"
@@ -533,4 +537,105 @@ function RecuDoc(p: RecuPdfProps & { logo: Buffer | null }) {
 
 export async function pdfRecu(p: RecuPdfProps) {
   return renderToBuffer(<RecuDoc {...p} logo={await logo()} />)
+}
+
+
+type ContextePdf = { org: OrgPdf; client: ClientPdf; dossierNumero: string }
+
+export type ReceptionPdfProps = ContextePdf & {
+  pv: Pick<Tables<"pv_reception">, "type" | "version" | "date_reception" | "lieu" | "decision" | "satisfaction" | "observations" | "motif_refus" | "date_limite_reserves" | "signe_le" | "refuse_le">
+  lignes: Pick<Tables<"pv_reception_lignes">, "id" | "libelle" | "resultat" | "observation">[]
+  reserves: Pick<Tables<"reserves">, "id" | "description" | "date_limite" | "statut" | "levee_le" | "commentaire_levee">[]
+  atlas: SignaturePdf | null
+  signataireClient: SignaturePdf | null
+}
+
+function BandeauExecution({ titre, numero, version }: { titre: string; numero: string; version: number }) {
+  return <View style={s.bandeau}>
+    <Text style={s.titre}>{titre}</Text>
+    <Text style={s.numero}>{numero} · v{version}</Text>
+  </View>
+}
+
+export async function pdfReception({ pv, lignes, reserves, org, client, dossierNumero, atlas, signataireClient }: ReceptionPdfProps) {
+  const modele = pv.type === "F05" ? "F-05 · Site web" : "F-06 · Prestation"
+  return renderToBuffer(<Document title={modele + " — " + dossierNumero}>
+    <Page size="A4" style={s.page}>
+      <Entete org={org} logo={await logo()} />
+      <BandeauExecution titre="PV de réception" numero={dossierNumero} version={pv.version} />
+      <Text style={s.texte}>{modele} · {pv.refuse_le ? "Refusé" : pv.signe_le ? "Signé" : "Brouillon"}</Text>
+      <View style={s.blocs}>
+        <BlocClient client={client} />
+        <View style={s.bloc}>
+          <Text>Date {datePdf(pv.date_reception)}{pv.lieu ? " · " + pv.lieu : ""}</Text>
+          {pv.decision && <Text>Décision {DECISIONS_PV[pv.decision]}</Text>}
+          {pv.satisfaction !== null && <Text>Satisfaction {pv.satisfaction}/5</Text>}
+          {pv.date_limite_reserves && <Text>Échéance des réserves {datePdf(pv.date_limite_reserves)}</Text>}
+        </View>
+      </View>
+      {pv.observations && <Text style={s.texte}>{pv.observations}</Text>}
+      {pv.motif_refus && <Text style={s.texte}>Motif du refus — {pv.motif_refus}</Text>}
+      <Text style={[s.texte, s.gras]}>Points de réception</Text>
+      {lignes.map(ligne => <View key={ligne.id} style={s.bloc}>
+        <Text style={s.gras}>{ligne.libelle} · {ligne.resultat ? RESULTATS_PV[ligne.resultat] : "À renseigner"}</Text>
+        {ligne.observation && <Text>{ligne.observation}</Text>}
+      </View>)}
+      {reserves.length > 0 && <>
+        <Text style={[s.texte, s.gras]}>Réserves</Text>
+        {reserves.map(r => <View key={r.id} style={s.bloc}>
+          <Text>{r.description} · {r.statut === "levee" ? "Levée" : "Ouverte"}</Text>
+          {r.date_limite && <Text>Échéance {datePdf(r.date_limite)}</Text>}
+          {r.levee_le && <Text>Levée le {dateHeurePdf(r.levee_le)}</Text>}
+          {r.commentaire_levee && <Text>{r.commentaire_levee}</Text>}
+        </View>)}
+      </>}
+      <View style={s.signatures} wrap={false}>
+        <CadreSignature titre="Atlas" sig={atlas} />
+        <CadreSignature titre="Client" sig={signataireClient} />
+      </View>
+      <Pied org={org} />
+    </Page>
+  </Document>)
+}
+
+export type InterventionPdfProps = ContextePdf & {
+  mission: Pick<Tables<"missions">, "titre" | "type" | "debut" | "fin" | "lieu">
+  rapport: Pick<RapportMission, "version" | "travaux" | "observations" | "redacteur" | "valideur" | "valide_le" | "signe_le" | "latitude" | "longitude" | "precision_m">
+  signature: SignaturePdf | null
+  photos: { id: string; libelle: string; jpeg: Buffer | null }[]
+}
+
+export async function pdfIntervention({ mission, rapport, signature, photos, org, client, dossierNumero }: InterventionPdfProps) {
+  return renderToBuffer(<Document title={"Rapport d’intervention — " + dossierNumero}>
+    <Page size="A4" style={s.page}>
+      <Entete org={org} logo={await logo()} />
+      <BandeauExecution titre="Rapport d’intervention" numero={dossierNumero} version={rapport.version} />
+      <View style={s.blocs}>
+        <BlocClient client={client} />
+        <View style={s.bloc}>
+          <Text style={s.gras}>{mission.titre} · {mission.type === "terrain" ? "Terrain" : "Interne"}</Text>
+          <Text>{dateHeurePdf(mission.debut)}{mission.fin ? " — " + dateHeurePdf(mission.fin) : ""}</Text>
+          {mission.lieu && <Text>{mission.lieu}</Text>}
+          {rapport.redacteur && <Text>Rédigé par {rapport.redacteur}</Text>}
+        </View>
+      </View>
+      <Text style={[s.texte, s.gras]}>{rapport.signe_le ? "Signé par le client" : rapport.valide_le ? "Validé" : "Brouillon"}</Text>
+      <Text style={s.texte}>{rapport.travaux}</Text>
+      {rapport.observations && <Text style={s.texte}>Observations — {rapport.observations}</Text>}
+      {rapport.latitude !== null && rapport.longitude !== null &&
+        <Text style={s.texte}>Position {rapport.latitude}, {rapport.longitude}{rapport.precision_m !== null ? " (± " + rapport.precision_m + " m)" : ""}</Text>}
+      {rapport.valide_le &&
+        <Text style={s.texte}>Validé le {dateHeurePdf(rapport.valide_le)} par {rapport.valideur ?? "le responsable du dossier"}</Text>}
+      {mission.type === "terrain" && <View style={s.signatures}><CadreSignature titre="Client" sig={signature} /></View>}
+      {photos.length > 0 && <Text style={[s.texte, s.gras]}>Photos du rapport</Text>}
+      {photos.map(photo => <View key={photo.id} style={[s.bloc, { marginTop: 6 }]} wrap={false}>
+        {photo.jpeg
+          // eslint-disable-next-line jsx-a11y/alt-text
+          ? <Image style={{ height: 185, objectFit: "contain" }} src={{ data: photo.jpeg, format: "jpg" }} />
+          : <Text>Image indisponible</Text>}
+        <Text>{photo.libelle}</Text>
+      </View>)}
+      <Pied org={org} />
+    </Page>
+  </Document>)
 }
