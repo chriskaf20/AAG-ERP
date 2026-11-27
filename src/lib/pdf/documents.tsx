@@ -14,7 +14,7 @@ import {
 
 import type { Tables } from "@/lib/database.types"
 import type { RapportMission } from "@/lib/missions"
-import { DECISIONS_PV, RESULTATS_PV } from "@/lib/reception"
+import { DECISIONS_PV, GRAVITES_RESERVE, RESULTATS_PV } from "@/lib/reception"
 
 const MARINE = "#0B1F4B"
 const OR = "#C9A13B"
@@ -545,7 +545,7 @@ type ContextePdf = { org: OrgPdf; client: ClientPdf; dossierNumero: string }
 export type ReceptionPdfProps = ContextePdf & {
   pv: Pick<Tables<"pv_reception">, "type" | "version" | "date_reception" | "lieu" | "decision" | "satisfaction" | "observations" | "motif_refus" | "date_limite_reserves" | "signe_le" | "refuse_le">
   lignes: Pick<Tables<"pv_reception_lignes">, "id" | "libelle" | "resultat" | "observation">[]
-  reserves: Pick<Tables<"reserves">, "id" | "description" | "date_limite" | "statut" | "levee_le" | "commentaire_levee">[]
+  reserves: Pick<Tables<"reserves">, "id" | "description" | "date_limite" | "statut" | "levee_le" | "commentaire_levee" | "gravite" | "justificatif_nom">[]
   atlas: SignaturePdf | null
   signataireClient: SignaturePdf | null
 }
@@ -583,10 +583,11 @@ export async function pdfReception({ pv, lignes, reserves, org, client, dossierN
       {reserves.length > 0 && <>
         <Text style={[s.texte, s.gras]}>Réserves</Text>
         {reserves.map(r => <View key={r.id} style={s.bloc}>
-          <Text>{r.description} · {r.statut === "levee" ? "Levée" : "Ouverte"}</Text>
+          <Text>{r.description} · {r.statut === "levee" ? "Levée" : "Ouverte"} · Gravité {GRAVITES_RESERVE[r.gravite].toLowerCase()}</Text>
           {r.date_limite && <Text>Échéance {datePdf(r.date_limite)}</Text>}
           {r.levee_le && <Text>Levée le {dateHeurePdf(r.levee_le)}</Text>}
           {r.commentaire_levee && <Text>{r.commentaire_levee}</Text>}
+          {r.justificatif_nom && <Text>Justificatif · {r.justificatif_nom}</Text>}
         </View>)}
       </>}
       <View style={s.signatures} wrap={false}>

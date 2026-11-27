@@ -114,7 +114,7 @@ export async function donneesReception(db: Db, id: string, orgId: string): Promi
     contexteDossier(db, pv.dossier_id),
     db.from("pv_reception_lignes").select("id, libelle, resultat, observation")
       .eq("pv_id", id).order("ordre").order("created_at"),
-    db.from("reserves").select("id, description, date_limite, statut, levee_le, commentaire_levee")
+    db.from("reserves").select("id, description, date_limite, statut, levee_le, commentaire_levee, gravite, justificatif_nom")
       .eq("pv_id", id).order("created_at"),
     signature(pv.signature_atlas_id),
     signature(pv.signature_client_id),

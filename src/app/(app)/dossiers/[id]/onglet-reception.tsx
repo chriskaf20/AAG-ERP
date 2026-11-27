@@ -12,10 +12,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAction } from "@/hooks/use-action"
 import type { Tables } from "@/lib/database.types"
 import { formatDate, formatDateHeure } from "@/lib/format"
-import { DECISIONS_PV, RESULTATS_F05, RESULTATS_F06, RESULTATS_PV } from "@/lib/reception"
+import { DECISIONS_PV, GRAVITES_RESERVE, RESULTATS_F05, RESULTATS_F06, RESULTATS_PV } from "@/lib/reception"
+import { LeverReserve } from "./lever-reserve"
 import { SaisieSignature } from "@/components/saisie-signature"
 import {
-  ajouterReserve, creerPvReception, enregistrerAvis, enregistrerLignePv, enregistrerPvReception, leverReserve,
+  ajouterReserve, creerPvReception, enregistrerAvis, enregistrerLignePv, enregistrerPvReception,
   lienReception, refuserReception, retirerElementPv, signerPvReception,
 } from "./reception-actions"
 
@@ -107,18 +108,21 @@ export function OngletReception({ dossier, pvs, lignes, reserves, avis, receptio
             <h3 className="font-medium">Réserves</h3>
             {reservesPv.length === 0 && <p className="text-muted-foreground">Aucune réserve.</p>}
             {reservesPv.map(r => <div key={r.id} className="grid gap-2 rounded-lg border p-3">
-              <p className="whitespace-pre-wrap">{r.description} <Badge variant="outline">{r.statut === "levee" ? "Levée" : "Ouverte"}</Badge></p>
+              <p className="whitespace-pre-wrap">{r.description} <Badge variant="outline">{r.statut === "levee" ? "Levée" : "Ouverte"}</Badge>{" "}
+                <Badge variant={r.gravite === "elevee" ? "destructive" : "outline"}>Gravité {GRAVITES_RESERVE[r.gravite].toLowerCase()}</Badge></p>
               {r.date_limite && <p>Échéance le {formatDate(r.date_limite)}</p>}
               {r.commentaire_levee && <p>{r.commentaire_levee}</p>}
+              {r.justificatif_nom && <a className="w-fit underline" href={`/dossiers/${dossier.id}/reserves/${r.id}/justificatif`}>Justificatif · {r.justificatif_nom}</a>}
               {modifiable && <FormulaireOperation bouton="Retirer la réserve" enregistrer={() => retirerElementPv(dossier.id, p.id, r.id, "reserves")} />}
               {reception && p.signe_le && r.statut !== "levee" && ["livre", "reserves"].includes(dossier.statut) &&
-                <FormulaireOperation bouton="Lever la réserve" enregistrer={leverReserve.bind(null, dossier.id, r.id)}>
-                  <Champ nom="Travaux correctifs"><Textarea name="commentaire" /></Champ>
-                </FormulaireOperation>}
+                <LeverReserve dossier={dossier} reserve={r.id} />}
             </div>)}
             {modifiable && <details><summary className="cursor-pointer">Ajouter une réserve</summary><div className="pt-2">
               <FormulaireOperation bouton="Ajouter la réserve" enregistrer={ajouterReserve.bind(null, dossier.id, p.id)}>
                 <Champ nom="Description de la réserve"><Textarea name="description" required /></Champ>
+                <Champ nom="Gravité"><NativeSelect name="gravite" defaultValue="moyenne">
+                  {Object.entries(GRAVITES_RESERVE).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </NativeSelect></Champ>
                 <Champ nom="Date limite individuelle"><Input name="date_limite" type="date" /></Champ>
               </FormulaireOperation>
             </div></details>}

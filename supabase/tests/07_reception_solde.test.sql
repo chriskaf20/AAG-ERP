@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(34);
+select plan(42);
 create temp table _ctx (cle text primary key, val text not null);
 grant all on _ctx to authenticated, service_role;
 
@@ -77,9 +77,16 @@ insert into public.pv_reception_lignes (organization_id, pv_id, libelle, resulta
 values ('a0000000-0000-4000-8000-000000000001', 'ee000000-0000-4000-8000-000000000011', 'Poser le marquage', 'non_realise');
 select throws_ok($$select public.signer_pv_reception('ee000000-0000-4000-8000-000000000011', 'atlas', 'Atlas',
                   'data:image/png;base64,iVBORw0KGgo=')$$, '23514', null, 'PV avec réserves : détail obligatoire');
-insert into public.reserves (id, organization_id, dossier_id, pv_id, description)
+insert into public.reserves (id, organization_id, dossier_id, pv_id, description, gravite)
 values ('ee000000-0000-4000-8000-000000000020', 'a0000000-0000-4000-8000-000000000001',
-        'f0000000-0000-4000-8000-000000000009', 'ee000000-0000-4000-8000-000000000011', 'Poser le marquage');
+        'f0000000-0000-4000-8000-000000000009', 'ee000000-0000-4000-8000-000000000011', 'Poser le marquage', 'elevee');
+select is((select gravite::text from public.reserves where id='ee000000-0000-4000-8000-000000000020'), 'elevee',
+  'gravité consignée avec la réserve');
+insert into _ctx select 'preuve', organization_id::text||'/'||numero||
+  '/reserves/ee000000-0000-4000-8000-000000000020/ab000000-0000-4000-8000-000000000001.pdf'
+  from public.dossiers where id='f0000000-0000-4000-8000-000000000009';
+select throws_ok($$insert into storage.objects(bucket_id,name) values ('dossiers',(select val from _ctx where cle='preuve'))$$,
+  '42501',null,'dépôt de preuve refusé avant signature du PV');
 select throws_ok($$select public.creer_lien_pv_reception('ee000000-0000-4000-8000-000000000011')$$,
                  '23514', null, 'lien client : signature Atlas préalable');
 select lives_ok($$select public.signer_pv_reception('ee000000-0000-4000-8000-000000000011', 'atlas', 'Atlas',
@@ -107,8 +114,23 @@ select lives_ok($$select public.change_dossier_status('f0000000-0000-4000-8000-0
                 'passage avec réserves');
 select throws_ok($$select public.change_dossier_status('f0000000-0000-4000-8000-000000000009','receptionne_a_facturer')$$,
                  '23514', null, 'réserve ouverte bloquante après le changement de statut');
-select is((public.lever_reserve('ee000000-0000-4000-8000-000000000020', 'Marquage posé')).statut,
-          'levee', 'réserve levée');
+select throws_ok($$select public.lever_reserve('ee000000-0000-4000-8000-000000000020','Marquage posé')$$,
+  '23514', 'Ajoutez un justificatif déposé pour cette réserve', 'levée sans justificatif impossible');
+select throws_ok($$select public.lever_reserve('ee000000-0000-4000-8000-000000000020','Marquage posé',
+  (select val from _ctx where cle='preuve'),'preuve.pdf')$$, '23514',null,'une référence de fichier absent ne suffit pas');
+select lives_ok($$insert into storage.objects(bucket_id,name) values ('dossiers',(select val from _ctx where cle='preuve'))$$,
+  'les responsables autorisés peuvent déposer le justificatif sur la réserve signée');
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000006","role":"authenticated"}',true);
+select throws_ok($$select public.lever_reserve('ee000000-0000-4000-8000-000000000020','Marquage posé',
+  (select val from _ctx where cle='preuve'),'preuve.pdf')$$, '42501',null,'la DAF ne peut pas lever la réserve');
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated"}',true);
+select is((public.lever_reserve('ee000000-0000-4000-8000-000000000020','Marquage posé',
+  (select val from _ctx where cle='preuve'),'preuve.pdf')).statut, 'levee', 'réserve levée avec le justificatif');
+select is((select justificatif_nom from public.reserves where id='ee000000-0000-4000-8000-000000000020'),'preuve.pdf',
+  'le justificatif est lié à la réserve');
+select is((public.lever_reserve('ee000000-0000-4000-8000-000000000020','Marquage posé',
+  (select val from _ctx where cle='preuve'),'preuve.pdf')).justificatif_chemin,
+  (select val from _ctx where cle='preuve'),'la relance retrouve le justificatif déjà consigné');
 insert into public.factures (id, organization_id, dossier_id, type, objet, devise)
 values ('ee000000-0000-4000-8000-000000000040', 'a0000000-0000-4000-8000-000000000001',
         'f0000000-0000-4000-8000-000000000009', 'mensuelle', 'Facture de recette mixte', 'CDF');

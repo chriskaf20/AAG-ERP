@@ -1357,6 +1357,9 @@ export type Database = {
           date_limite: string | null
           description: string
           dossier_id: string
+          gravite: Database["public"]["Enums"]["incident_gravite"]
+          justificatif_chemin: string | null
+          justificatif_nom: string | null
           id: string
           levee_le: string | null
           levee_par: string | null
@@ -1372,6 +1375,9 @@ export type Database = {
           date_limite?: string | null
           description: string
           dossier_id: string
+          gravite?: Database["public"]["Enums"]["incident_gravite"]
+          justificatif_chemin?: string | null
+          justificatif_nom?: string | null
           id?: string
           levee_le?: string | null
           levee_par?: string | null
@@ -1387,6 +1393,9 @@ export type Database = {
           date_limite?: string | null
           description?: string
           dossier_id?: string
+          gravite?: Database["public"]["Enums"]["incident_gravite"]
+          justificatif_chemin?: string | null
+          justificatif_nom?: string | null
           id?: string
           levee_le?: string | null
           levee_par?: string | null
@@ -3727,7 +3736,7 @@ export type Database = {
       confirmer_envoi_point: { Args: { p_erreur?: string; p_ok: boolean; p_point: string }; Returns: undefined }
       creer_lien_pv_reception: { Args: { p_pv: string }; Returns: string }
       enregistrer_point_avancement: { Args: { p_dossier: string; p_texte: string }; Returns: Json }
-      lever_reserve: { Args: { p_commentaire?: string; p_reserve: string }; Returns: Database["public"]["Tables"]["reserves"]["Row"] }
+      lever_reserve: { Args: { p_commentaire?: string; p_reserve: string; p_justificatif?: string; p_nom?: string }; Returns: Database["public"]["Tables"]["reserves"]["Row"] }
       mes_missions: { Args: { p_org: string }; Returns: Json }
       mission_detail: { Args: { p_mission: string }; Returns: Json }
       nouvelle_version_rapport: { Args: { p_rapport: string }; Returns: string }

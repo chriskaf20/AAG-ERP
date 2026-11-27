@@ -56,9 +56,10 @@ export async function enregistrerLignePv(dossier: string, pv: string, ligne: str
 export async function ajouterReserve(dossier: string, pv: string, fd: FormData) {
   const { supabase, organisation } = await getContexte()
   const description = texte(fd, "description")
-  if (!description) return { message: "Décrivez la réserve." }
+  const gravite = z.enum(["faible", "moyenne", "elevee"]).safeParse(texte(fd, "gravite"))
+  if (!description || !gravite.success) return { message: "Décrivez la réserve et indiquez sa gravité." }
   const { error } = await supabase.from("reserves").insert({
-    dossier_id: dossier, organization_id: organisation.id, pv_id: pv, description, date_limite: texte(fd, "date_limite"),
+    dossier_id: dossier, organization_id: organisation.id, pv_id: pv, description, gravite: gravite.data, date_limite: texte(fd, "date_limite"),
   })
   return resultat(dossier, error, "Réserve ajoutée")
 }
@@ -71,10 +72,17 @@ export async function retirerElementPv(dossier: string, pv: string, id: string, 
   return resultat(dossier, error, "Élément retiré")
 }
 
-export async function leverReserve(dossier: string, reserve: string, fd: FormData) {
-  const { supabase } = await getContexte()
-  const commentaire = texte(fd, "commentaire")
-  const { error } = await supabase.rpc("lever_reserve", { p_reserve: reserve, ...(commentaire ? { p_commentaire: commentaire } : {}) })
+export async function leverReserve(dossier: string, reserve: string, chemin: string, nom: string, fd: FormData) {
+  const v = z.object({ dossier: z.uuid(), reserve: z.uuid(), chemin: z.string().min(1).max(500), nom: z.string().trim().min(1).max(255) })
+    .safeParse({ dossier, reserve, chemin, nom })
+  if (!v.success) return { message: "Justificatif invalide." }
+  const { supabase, organisation } = await getContexte()
+  const { data } = await supabase.from("reserves").select("id")
+    .eq("organization_id", organisation.id).eq("dossier_id", v.data.dossier).eq("id", v.data.reserve).maybeSingle()
+  if (!data) return { message: "Réserve introuvable." }
+  const { error } = await supabase.rpc("lever_reserve", {
+    p_reserve: v.data.reserve, p_justificatif: v.data.chemin, p_nom: v.data.nom, p_commentaire: texte(fd, "commentaire") ?? undefined,
+  })
   return resultat(dossier, error, "Réserve levée")
 }
 
