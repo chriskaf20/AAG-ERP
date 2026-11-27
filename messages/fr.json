@@ -22,6 +22,8 @@
     "services": "Services",
     "missions": "Mes missions",
     "planning": "Planning",
+    "achats": "Achats",
+    "fournisseurs": "Fournisseurs",
     "rapports": "Rapports",
     "audit": "Journal d'audit",
     "profil": "Mon profil"

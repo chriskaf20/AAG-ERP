@@ -18,6 +18,7 @@ import {
   ReceiptTextIcon,
   Settings2Icon,
   ShieldCheckIcon,
+  TruckIcon,
   UsersIcon,
 } from "lucide-react"
 
@@ -42,6 +43,7 @@ const ICONES: Record<IconeNav, React.ComponentType> = {
   nouveau: FilePlus2Icon,
   clients: Building2Icon,
   finance: LandmarkIcon,
+  fournisseurs: TruckIcon,
   devis: FileSignatureIcon,
   factures: ReceiptTextIcon,
   paiements: BanknoteIcon,

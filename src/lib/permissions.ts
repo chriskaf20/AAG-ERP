@@ -49,9 +49,15 @@ export const PERMISSIONS = [
   "missions.report",
   "execution.write",
   "reception.write",
+  "achats.read",
+  "achats.write",
+  "achats.validate",
+  "fournisseurs.manage",
 ] as const
 
 export type Permission = (typeof PERMISSIONS)[number]
+
+export const LECTURE_FOURNISSEURS: Permission[] = ["achats.read", "fournisseurs.manage"]
 
 export const LECTURE_MISSIONS: Permission[] = ["missions.read_assigned", "dossiers.read_all", "dossiers.read_dept", "dossiers.read_own"]
 
@@ -59,13 +65,14 @@ export const LECTURE_MISSIONS: Permission[] = ["missions.read_assigned", "dossie
  * Matrice rôle → permissions (validée). Elle est aussi en base (role_permissions,
  * migration générée depuis ce fichier) : la base reste l'autorité pour la RLS.
  */
+const PERMISSIONS_ACHATS = ["achats.read", "achats.write", "fournisseurs.manage"] as const
 const PERMISSIONS_MISSION = ["missions.read_assigned", "missions.report"] as const
 const PERMISSIONS_EXECUTION = [...PERMISSIONS_MISSION, "execution.write", "reception.write"] as const
 
 export const ROLE_PERMISSIONS: Record<AppRole, readonly Permission[]> = {
   admin_systeme: ["admin.users", "admin.settings", "audit.read", ...PERMISSIONS_MISSION],
   gerant: [
-    ...PERMISSIONS_EXECUTION,
+    ...PERMISSIONS_EXECUTION, ...PERMISSIONS_ACHATS, "achats.validate",
     "dossiers.read_all", "dossiers.create", "dossiers.verify", "dossiers.decide",
     "clients.read", "clients.write",
     "devis.read", "devis.write", "devis.validate", "devis.send",
@@ -81,13 +88,13 @@ export const ROLE_PERMISSIONS: Record<AppRole, readonly Permission[]> = {
     "factures.read", "marges.read", "services.manage", "reports.read",
   ],
   directeur_operations: [
-    ...PERMISSIONS_EXECUTION,
+    ...PERMISSIONS_EXECUTION, ...PERMISSIONS_ACHATS,
     "dossiers.read_all", "dossiers.create", "dossiers.verify",
     "clients.read", "clients.write", "devis.read", "devis.write",
     "marges.read", "reports.read",
   ],
   daf: [
-    ...PERMISSIONS_MISSION,
+    ...PERMISSIONS_MISSION, "achats.read",
     "dossiers.read_all", "clients.read", "devis.read",
     "factures.read", "factures.write", "paiements.write", "normalisation.write",
     "marges.read", "audit.read", "reports.read",
@@ -104,7 +111,7 @@ export const ROLE_PERMISSIONS: Record<AppRole, readonly Permission[]> = {
     "clients.read", "clients.write", "devis.read", "devis.write",
     "factures.read", "marges.read",
   ],
-  acheteur: ["dossiers.read_dept", "clients.read", ...PERMISSIONS_MISSION],
+  acheteur: ["dossiers.read_dept", "clients.read", ...PERMISSIONS_MISSION, ...PERMISSIONS_ACHATS],
   responsable_rh: ["dossiers.read_dept", "clients.read", ...PERMISSIONS_MISSION],
   agent_terrain: ["dossiers.read_assigned", ...PERMISSIONS_MISSION],
   client: [],

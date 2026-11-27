@@ -149,6 +149,65 @@ export type Database = {
           },
         ]
       }
+      fournisseurs: {
+        Row: {
+          actif: boolean
+          categorie: string | null
+          contact: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          evaluation: number | null
+          id: string
+          nif: string | null
+          nom: string
+          organization_id: string
+          rccm: string | null
+          telephone: string | null
+          updated_at: string
+        }
+        Insert: {
+          actif?: boolean
+          categorie?: string | null
+          contact?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          evaluation?: number | null
+          id?: string
+          nif?: string | null
+          nom: string
+          organization_id: string
+          rccm?: string | null
+          telephone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actif?: boolean
+          categorie?: string | null
+          contact?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          evaluation?: number | null
+          id?: string
+          nif?: string | null
+          nom?: string
+          organization_id?: string
+          rccm?: string | null
+          telephone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fournisseurs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       livrables: {
         Row: {
           created_at: string
@@ -3735,6 +3794,10 @@ export type Database = {
         | "missions.report"
         | "execution.write"
         | "reception.write"
+        | "achats.read"
+        | "achats.write"
+        | "achats.validate"
+        | "fournisseurs.manage"
       app_role:
         | "admin_systeme"
         | "gerant"
@@ -3970,6 +4033,10 @@ export const Constants = {
         "missions.report",
         "execution.write",
         "reception.write",
+        "achats.read",
+        "achats.write",
+        "achats.validate",
+        "fournisseurs.manage",
       ],
       app_role: [
         "admin_systeme",

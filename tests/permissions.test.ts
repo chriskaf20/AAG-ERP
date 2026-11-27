@@ -39,14 +39,14 @@ test("DAF : lit tous les dossiers sans les modifier", () => {
 
 test("union multi-rôle : responsable de dossier + acheteur", () => {
   const p = permissionsDe(["responsable_dossier", "acheteur"])
-  assert.equal(p.length, 14)
+  assert.equal(p.length, 17)
   assert.ok(a(p, "dossiers.read_own") && a(p, "dossiers.read_dept"))
   assert.ok(!a(p, "devis.send"))
 })
 
 test("union multi-rôle : gérant + admin_systeme = permissions du gérant", () => {
   assert.deepEqual(permissionsDe(["gerant", "admin_systeme"]), permissionsDe(["gerant"]))
-  assert.equal(permissionsDe(["gerant", "admin_systeme"]).length, 24)
+  assert.equal(permissionsDe(["gerant", "admin_systeme"]).length, 28)
 })
 
 test("union : ordre stable et sans doublon", () => {

@@ -2,7 +2,7 @@ import "server-only"
 
 import { getTranslations } from "next-intl/server"
 
-import { aUne, LECTURE_DOSSIERS, LECTURE_MISSIONS, type Permission } from "@/lib/permissions"
+import { aUne, LECTURE_DOSSIERS, LECTURE_FOURNISSEURS, LECTURE_MISSIONS, type Permission } from "@/lib/permissions"
 
 export type IconeNav =
   | "tableau"
@@ -12,6 +12,7 @@ export type IconeNav =
   | "nouveau"
   | "clients"
   | "finance"
+  | "fournisseurs"
   | "devis"
   | "factures"
   | "paiements"
@@ -60,6 +61,10 @@ export async function menuNavigation(perms: readonly Permission[]): Promise<NavG
         { titre: t("services"), url: "/services", icone: "services", permis: ["services.manage"] },
         { titre: t("rapports"), url: "/rapports", icone: "rapports", permis: ["reports.read"] },
       ],
+    },
+    {
+      titre: t("achats"),
+      items: [{ titre: t("fournisseurs"), url: "/fournisseurs", icone: "fournisseurs", permis: LECTURE_FOURNISSEURS }],
     },
     {
       titre: t("administration"),
