@@ -710,6 +710,58 @@ export type Database = {
           },
         ]
       }
+      portail_partages: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          document_id: string
+          id: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          document_id: string
+          id?: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          document_id?: string
+          id?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portail_partages_organization_id_client_id_fkey"
+            columns: ["organization_id", "client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "portail_partages_organization_id_document_id_fkey"
+            columns: ["organization_id", "document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "portail_partages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       livrables: {
         Row: {
           created_at: string
@@ -3596,6 +3648,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      portail_comptes_gerant: {
+        Args: { p_org: string }
+        Returns: { user_id: string; client_id: string | null; nom: string | null; email: string | null }[]
+      }
+      portail_document_fichier: {
+        Args: { p_org: string; p_document: string }
+        Returns: { bucket: string; chemin: string; nom_fichier: string }[]
+      }
+      portail_documents: {
+        Args: { p_org: string; p_dossier?: string }
+        Returns: { id: string; nom_fichier: string; libelle: string | null; type: Database["public"]["Enums"]["document_type"]; version: number; partage_le: string }[]
+      }
+      portail_dossiers: {
+        Args: { p_org: string; p_dossier?: string }
+        Returns: { id: string; numero: string; service: string; statut: Database["public"]["Enums"]["dossier_statut"]; date_reception: string }[]
+      }
+      portail_lier_compte: {
+        Args: { p_org: string; p_client: string; p_user: string; p_actif: boolean }
+        Returns: undefined
+      }
+      portail_partager_document: {
+        Args: { p_org: string; p_document: string; p_actif: boolean }
+        Returns: undefined
+      }
       remplacer_bon_commande: {
         Args: { p_bon: string; p_motif: string; p_org: string }
         Returns: string
@@ -4369,6 +4445,7 @@ export type Database = {
         | "accuse_reception"
         | "fiche_ouverture"
         | "fiche_verification"
+        | "f03_cahier_charges"
         | "autre"
         | "devis"
         | "facture"
@@ -4611,6 +4688,7 @@ export const Constants = {
         "accuse_reception",
         "fiche_ouverture",
         "fiche_verification",
+        "f03_cahier_charges",
         "autre",
         "devis",
         "facture",

@@ -14,6 +14,7 @@ export type IconeNav =
   | "finance"
   | "fournisseurs"
   | "stock"
+  | "portail"
   | "bons-commande"
   | "devis"
   | "factures"
@@ -37,7 +38,7 @@ export function accueil(perms: readonly Permission[]) {
 }
 
 /** Menu calculé côté serveur à partir des permissions, dans un ordre fixe ; groupes vides masqués. */
-export async function menuNavigation(perms: readonly Permission[]): Promise<NavGroupe[]> {
+export async function menuNavigation(perms: readonly Permission[], portail = false): Promise<NavGroupe[]> {
   const t = await getTranslations("nav")
   const general = perms.some((p) => !["dossiers.read_assigned", "missions.read_assigned", "missions.report"].includes(p))
 
@@ -51,6 +52,7 @@ export async function menuNavigation(perms: readonly Permission[]): Promise<NavG
         { titre: t("dossiers"), url: "/dossiers", icone: "dossiers", permis: LECTURE_DOSSIERS },
         { titre: t("nouveauDossier"), url: "/dossiers/nouveau", icone: "nouveau", permis: ["dossiers.create"] },
         { titre: t("clients"), url: "/clients", icone: "clients", permis: ["clients.read"] },
+        ...(portail ? [{ titre: "Portail client", url: "/portail", icone: "portail" as const, permis: "tous" as const }] : []),
       ],
     },
     {

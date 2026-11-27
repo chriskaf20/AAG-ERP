@@ -14,16 +14,17 @@ import { a } from "@/lib/permissions"
 import { modifierClient } from "../actions"
 import { ClientForm } from "../client-form"
 import { Contacts } from "./contacts"
+import { ComptesPortail } from "./comptes-portail"
 
 export const metadata: Metadata = { title: "Fiche client" }
 
 export default async function FicheClient({ params }: PageProps<"/clients/[id]">) {
   const { id } = await params
-  const { supabase, permissions, organisation } = await exiger("clients.read")
+  const { supabase, permissions, organisation, roles } = await exiger("clients.read")
 
-  const [{ data: client }, { data: contacts }, { data: documents }, { data: dossiers }] =
+  const [{ data: client }, { data: contacts }, { data: documents }, { data: dossiers }, comptesPortail, partagesPortail] =
     await Promise.all([
-      supabase.from("clients").select("*").eq("id", id).maybeSingle(),
+      supabase.from("clients").select("*").eq("id", id).eq("organization_id", organisation.id).maybeSingle(),
       supabase.from("contacts").select("*").eq("client_id", id).order("nom"),
       supabase
         .from("documents")
@@ -35,7 +36,12 @@ export default async function FicheClient({ params }: PageProps<"/clients/[id]">
         .select("id, numero, service, statut, date_reception")
         .eq("client_id", id)
         .order("date_reception", { ascending: false }),
+      roles.includes("gerant") ? supabase.rpc("portail_comptes_gerant", { p_org: organisation.id }) : null,
+      roles.includes("gerant") ? supabase.from("portail_partages").select("document_id")
+        .eq("organization_id", organisation.id).eq("client_id", id) : null,
     ])
+  if (comptesPortail?.error) throw comptesPortail.error
+  if (partagesPortail?.error) throw partagesPortail.error
 
   if (!client) notFound()
   const ecriture = a(permissions, "clients.write")
@@ -50,6 +56,7 @@ export default async function FicheClient({ params }: PageProps<"/clients/[id]">
               <TabsTrigger value="infos">Informations</TabsTrigger>
               <TabsTrigger value="contacts">Contacts ({contacts?.length ?? 0})</TabsTrigger>
               <TabsTrigger value="pieces">Pièces</TabsTrigger>
+              {comptesPortail && <TabsTrigger value="portail">Accès portail</TabsTrigger>}
               <TabsTrigger value="dossiers">Dossiers ({dossiers?.length ?? 0})</TabsTrigger>
             </TabsList>
             <TabsContent value="infos" className="pt-4">
@@ -66,6 +73,9 @@ export default async function FicheClient({ params }: PageProps<"/clients/[id]">
             <TabsContent value="contacts" className="pt-4">
               <Contacts clientId={client.id} contacts={contacts ?? []} peutEcrire={ecriture} />
             </TabsContent>
+            {comptesPortail?.data && <TabsContent value="portail" className="pt-4">
+              <ComptesPortail client={id} comptes={comptesPortail.data} />
+            </TabsContent>}
             <TabsContent value="pieces" className="pt-4">
               <PiecesManager
                 titre="Pièces du client"
@@ -78,6 +88,7 @@ export default async function FicheClient({ params }: PageProps<"/clients/[id]">
                     ? ["rccm", "nif", "id_nat", "piece_identite", "autre"]
                     : ["piece_identite", "autre"]
                 }
+                partagesPortail={partagesPortail?.data?.map(p => p.document_id)}
                 documents={documents ?? []}
                 peutEcrire={ecriture}
               />

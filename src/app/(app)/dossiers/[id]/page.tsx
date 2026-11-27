@@ -58,6 +58,7 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
     { data: historique },
     { data: affectations },
     membres,
+    partagesPortail,
   ] = await Promise.all([
     supabase.from("verifications").select("*").eq("dossier_id", id).order("created_at", { ascending: false }),
     supabase
@@ -76,7 +77,10 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
       .order("created_at", { ascending: false }),
     supabase.from("dossier_affectations").select("id, user_id").eq("dossier_id", id),
     membresOrganisation(ctx),
+    ctx.roles.includes("gerant") ? supabase.from("portail_partages").select("document_id")
+      .eq("organization_id", organisation.id).eq("client_id", d.client_id) : null,
   ])
+  if (partagesPortail?.error) throw partagesPortail.error
 
   const [execution, reception] = droits.suivi_read ? await Promise.all([
     Promise.all([
@@ -325,7 +329,8 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
                 bucket="dossiers"
                 orgId={organisation.id}
                 dossier={{ id: d.id, numero: d.numero }}
-                types={["accuse_reception", "fiche_ouverture", "fiche_verification", "autre"]}
+                types={["accuse_reception", "fiche_ouverture", "fiche_verification", "f03_cahier_charges", "autre"]}
+                partagesPortail={partagesPortail?.data?.map(p => p.document_id)}
                 documents={documents ?? []}
                 peutEcrire={pilote}
               />

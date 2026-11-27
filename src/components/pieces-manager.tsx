@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { enregistrerDocument } from "@/app/(app)/documents/actions"
+import { partagerDocumentPortail } from "@/app/(app)/documents/actions-portail"
+import { FormulaireOperation } from "@/components/formulaire-operation"
 import type { Enums } from "@/lib/database.types"
 import { formatDateHeure, formatTaille } from "@/lib/format"
 import { createClient } from "@/lib/supabase/client"
@@ -52,6 +54,7 @@ export function PiecesManager({
   types,
   documents,
   peutEcrire,
+  partagesPortail,
 }: {
   titre: string
   description?: string
@@ -62,12 +65,14 @@ export function PiecesManager({
   types: DocType[]
   documents: DocumentLigne[]
   peutEcrire: boolean
+  partagesPortail?: string[]
 }) {
   const t = useTranslations("documents")
   const router = useRouter()
   const [enCours, setEnCours] = React.useState<DocType | null>(null)
   const inputs = React.useRef<Partial<Record<DocType, HTMLInputElement | null>>>({})
 
+  const typesVisibles = partagesPortail ? [...new Set([...types, ...documents.map(d => d.type)])] : types
   const parType = (type: DocType) =>
     documents.filter((d) => d.type === type).sort((a, b) => b.version - a.version)
 
@@ -121,7 +126,7 @@ export function PiecesManager({
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent className="flex flex-col divide-y">
-        {types.map((type) => {
+        {typesVisibles.map((type) => {
           const versions = parType(type)
           const actuel = versions[0]
           const anciens = type === "autre" ? versions.slice(1) : versions.slice(1)
@@ -129,7 +134,7 @@ export function PiecesManager({
             <div key={type} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
               <div className="flex flex-wrap items-center gap-2">
                 <FileIcon className="size-4 text-muted-foreground" aria-hidden />
-                <span className="font-medium">{t(type)}</span>
+                <span className="font-medium">{t.has(type) ? t(type) : type}</span>
                 {actuel ? (
                   <Badge variant="outline" className="border-success/40 text-success">
                     Reçu · v{actuel.version}
@@ -139,7 +144,7 @@ export function PiecesManager({
                     Manquant
                   </Badge>
                 )}
-                {peutEcrire && (
+                {peutEcrire && types.includes(type) && (
                   <div className="ml-auto">
                     <input
                       ref={(el) => {
@@ -173,7 +178,7 @@ export function PiecesManager({
                 )}
               </div>
               {(type === "autre" ? versions : actuel ? [actuel] : []).map((d) => (
-                <LigneDocument key={d.id} doc={d} />
+                <LigneDocument key={d.id} doc={d} partagePortail={partagesPortail?.includes(d.id)} />
               ))}
               {type !== "autre" && anciens.length > 0 && (
                 <details className="text-sm">
@@ -182,7 +187,7 @@ export function PiecesManager({
                   </summary>
                   <div className="mt-1 flex flex-col">
                     {anciens.map((d) => (
-                      <LigneDocument key={d.id} doc={d} />
+                      <LigneDocument key={d.id} doc={d} partagePortail={partagesPortail?.includes(d.id)} />
                     ))}
                   </div>
                 </details>
@@ -195,7 +200,7 @@ export function PiecesManager({
   )
 }
 
-function LigneDocument({ doc }: { doc: DocumentLigne }) {
+function LigneDocument({ doc, partagePortail }: { doc: DocumentLigne; partagePortail?: boolean }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-6 text-sm">
       <a
@@ -221,6 +226,9 @@ function LigneDocument({ doc }: { doc: DocumentLigne }) {
         <DownloadIcon className="size-3.5" aria-hidden />
         <span className="sr-only sm:not-sr-only">Télécharger</span>
       </a>
+      {partagePortail !== undefined && <FormulaireOperation
+        bouton={partagePortail ? "Révoquer le partage client" : "Partager au portail client"}
+        enregistrer={partagerDocumentPortail.bind(null, doc.id, !partagePortail)} />}
     </div>
   )
 }

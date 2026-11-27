@@ -17,6 +17,7 @@ const schema = z.object({
     "accuse_reception",
     "fiche_ouverture",
     "fiche_verification",
+    "f03_cahier_charges",
     "autre",
     "devis",
     "facture",

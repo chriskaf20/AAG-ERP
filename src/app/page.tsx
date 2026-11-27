@@ -4,6 +4,7 @@ import { getContexte } from "@/lib/contexte"
 import { accueil } from "@/lib/navigation"
 
 export default async function Accueil() {
-  const { permissions } = await getContexte()
+  const { permissions, roles } = await getContexte()
+  if (permissions.length === 0 && roles.includes("client")) redirect("/portail")
   redirect(accueil(permissions))
 }

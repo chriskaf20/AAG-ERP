@@ -61,6 +61,7 @@ const PAGES: [string, Regle, boolean][] = [
   ["/admin/parametres", ["admin.settings"], true],
   ["/admin/audit", ["audit.read"], true],
   ["/profil", "tous", false],
+  ["/portail", [], false],
 ]
 const MENU_SERVICES = (p: Permission[]) => aUne(p, "services.manage")
 
