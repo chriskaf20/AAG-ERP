@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(27);
+select plan(34);
 create temp table _ctx (cle text primary key, val text not null);
 grant all on _ctx to authenticated, service_role;
 
@@ -109,8 +109,26 @@ select throws_ok($$select public.change_dossier_status('f0000000-0000-4000-8000-
                  '23514', null, 'réserve ouverte bloquante après le changement de statut');
 select is((public.lever_reserve('ee000000-0000-4000-8000-000000000020', 'Marquage posé')).statut,
           'levee', 'réserve levée');
+insert into public.factures (id, organization_id, dossier_id, type, objet, devise)
+values ('ee000000-0000-4000-8000-000000000040', 'a0000000-0000-4000-8000-000000000001',
+        'f0000000-0000-4000-8000-000000000009', 'mensuelle', 'Facture de recette mixte', 'CDF');
+insert into public.facture_lignes (organization_id, facture_id, description, prix_unitaire)
+values ('a0000000-0000-4000-8000-000000000001', 'ee000000-0000-4000-8000-000000000040', 'Service en CDF', 10000);
+select public.emettre_facture('ee000000-0000-4000-8000-000000000040');
+select throws_ok($$select public.change_dossier_status('f0000000-0000-4000-8000-000000000009','receptionne_a_facturer')$$,
+  '23514', 'Solde bloqué : le dossier combine des montants en USD et en CDF. Aucun taux de conversion du solde n''a été validé.',
+  'réception : une facture en CDF ne peut pas être déduite du devis en USD');
+select is((select statut::text from public.dossiers where id = 'f0000000-0000-4000-8000-000000000009'),
+  'reserves', 'le passage et son historique sont annulés avec la génération');
+select is((select count(*) from public.factures where dossier_id = 'f0000000-0000-4000-8000-000000000009' and type = 'solde'),
+  0::bigint, 'aucun brouillon en cas de combinaison USD/CDF');
+select throws_ok($$select public.creer_facture_depuis_devis('dd000000-0000-4000-8000-000000000010','solde')$$,
+  '23514', 'Solde bloqué : le dossier combine des montants en USD et en CDF. Aucun taux de conversion du solde n''a été validé.',
+  'création depuis le devis : même garde multidevise');
+select public.normaliser_facture('ee000000-0000-4000-8000-000000000040', 'FN-CDF-07', 'DEF-CDF-07');
+select public.emettre_avoir('ee000000-0000-4000-8000-000000000040', 11600, 'Annulation totale de la facture CDF');
 select lives_ok($$select public.change_dossier_status('f0000000-0000-4000-8000-000000000009','receptionne_a_facturer')$$,
-                'réception après levée de la réserve');
+                'réception après levée de la réserve et neutralisation de la facture CDF');
 insert into _ctx select 'solde', id::text from public.factures
  where dossier_id = 'f0000000-0000-4000-8000-000000000009' and type = 'solde' and statut = 'brouillon';
 select is((select total_ttc from public.factures where id = (select val::uuid from _ctx where cle = 'solde')),
@@ -128,11 +146,25 @@ insert into public.avenants (organization_id, contrat_id, objet, montant_delta, 
  ('a0000000-0000-4000-8000-000000000001', 'ee000000-0000-4000-8000-000000000030', 'Travaux retirés', -125, 'signe'),
  ('a0000000-0000-4000-8000-000000000001', 'ee000000-0000-4000-8000-000000000030', 'Avenant en préparation', 999, 'brouillon');
 reset role;
-select public.generer_facture_solde('f0000000-0000-4000-8000-000000000009');
+select is(public.generer_facture_solde('f0000000-0000-4000-8000-000000000009'),
+  (select val::uuid from _ctx where cle = 'solde'), 'une nouvelle génération réutilise le même brouillon');
 set local role authenticated;
 select is((select total_ttc from public.factures where id = (select val::uuid from _ctx where cle = 'solde')),
           6250.00::numeric, 'avenants signés : + 800 − 125, brouillon ignoré');
 
+select is((select count(*) from public.factures where dossier_id = 'f0000000-0000-4000-8000-000000000009' and type = 'solde'),
+  1::bigint, 'aucun doublon après recalcul');
+insert into public.factures (id, organization_id, dossier_id, type, objet, devise)
+values ('ee000000-0000-4000-8000-000000000041', 'a0000000-0000-4000-8000-000000000001',
+        'f0000000-0000-4000-8000-000000000009', 'mensuelle', 'Autre facture en CDF', 'CDF');
+insert into public.facture_lignes (organization_id, facture_id, description, prix_unitaire)
+values ('a0000000-0000-4000-8000-000000000001', 'ee000000-0000-4000-8000-000000000041', 'Service en CDF', 10000);
+select public.emettre_facture('ee000000-0000-4000-8000-000000000041');
+select throws_ok($$select public.emettre_facture((select val::uuid from _ctx where cle = 'solde'))$$,
+  '23514', 'Solde bloqué : le dossier combine des montants en USD et en CDF. Aucun taux de conversion du solde n''a été validé.',
+  'un brouillon de solde antérieur ne peut pas être émis après introduction du CDF');
+select public.normaliser_facture('ee000000-0000-4000-8000-000000000041', 'FN-CDF-2-07', 'DEF-CDF-2-07');
+select public.emettre_avoir('ee000000-0000-4000-8000-000000000041', 11600, 'Annulation totale de la facture CDF');
 select public.emettre_facture((select val::uuid from _ctx where cle = 'solde'));
 select public.normaliser_facture((select val::uuid from _ctx where cle = 'solde'), 'FN-SOLDE-07', 'DEF-SOLDE-07');
 select throws_ok($$select public.change_dossier_status('f0000000-0000-4000-8000-000000000009','cloture')$$,
