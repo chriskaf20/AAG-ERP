@@ -1,10 +1,12 @@
-const TZ = "Africa/Lubumbashi"
+export const FUSEAU_HORAIRE = "Africa/Lubumbashi"
+
+const heure = new Intl.DateTimeFormat("fr-FR", { timeStyle: "short", timeZone: FUSEAU_HORAIRE })
 
 export function formatDate(d: string | null | undefined) {
   if (!d) return "—"
   // Les dates « AAAA-MM-JJ » sont des dates civiles : pas de décalage horaire
   const date = /^\d{4}-\d{2}-\d{2}$/.test(d) ? new Date(`${d}T12:00:00Z`) : new Date(d)
-  return new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: TZ }).format(date)
+  return new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: FUSEAU_HORAIRE }).format(date)
 }
 
 export function formatDateHeure(d: string | null | undefined) {
@@ -12,8 +14,12 @@ export function formatDateHeure(d: string | null | undefined) {
   return new Intl.DateTimeFormat("fr-FR", {
     dateStyle: "medium",
     timeStyle: "short",
-    timeZone: TZ,
+    timeZone: FUSEAU_HORAIRE,
   }).format(new Date(d))
+}
+
+export function formatHeure(d: string) {
+  return heure.format(new Date(d))
 }
 
 export function formatMontant(montant: number | null | undefined, devise = "USD") {

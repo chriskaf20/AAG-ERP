@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import {
   BanknoteIcon,
   BarChart3Icon,
+  CalendarDaysIcon,
   ClipboardListIcon,
   HistoryIcon,
   Building2Icon,
@@ -34,6 +35,7 @@ import type { IconeNav, NavGroupe } from "@/lib/navigation"
 const ICONES: Record<IconeNav, React.ComponentType> = {
   tableau: LayoutDashboardIcon,
   missions: ClipboardListIcon,
+  planning: CalendarDaysIcon,
   rapports: BarChart3Icon,
   audit: HistoryIcon,
   dossiers: FolderKanbanIcon,

@@ -10,7 +10,7 @@ import type { AppRole, Permission } from "../src/lib/permissions"
 
 // Module TypeScript du projet (CommonJS) chargé depuis ESM
 const P = ((M as unknown as { default?: typeof M }).default ?? M) as typeof M
-const { aUne, LECTURE_DOSSIERS, permissionsDe } = P
+const { aUne, LECTURE_DOSSIERS, LECTURE_MISSIONS, permissionsDe } = P
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3001"
 const ORG = "a0000000-0000-4000-8000-000000000001"
@@ -42,6 +42,7 @@ const PAGES: [string, Regle, boolean][] = [
   // [url, permissions (une suffit), présent dans le menu]
   ["/tableau-de-bord", "general", true],
   ["/missions", ["missions.read_assigned", "dossiers.read_assigned"], true],
+  ["/planning", LECTURE_MISSIONS, true],
   ["/dossiers", LECTURE_DOSSIERS, true],
   ["/dossiers/nouveau", ["dossiers.create"], true],
   ["/clients", ["clients.read"], true],

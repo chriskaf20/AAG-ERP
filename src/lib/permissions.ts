@@ -53,6 +53,8 @@ export const PERMISSIONS = [
 
 export type Permission = (typeof PERMISSIONS)[number]
 
+export const LECTURE_MISSIONS: Permission[] = ["missions.read_assigned", "dossiers.read_all", "dossiers.read_dept", "dossiers.read_own"]
+
 /**
  * Matrice rôle → permissions (validée). Elle est aussi en base (role_permissions,
  * migration générée depuis ce fichier) : la base reste l'autorité pour la RLS.

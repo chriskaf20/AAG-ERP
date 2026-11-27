@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { exiger } from "@/lib/contexte"
 import { formatDateHeure } from "@/lib/format"
 import { STATUT_MISSION, type FicheMission } from "@/lib/missions"
+import { LECTURE_MISSIONS } from "@/lib/permissions"
 import { RapportsMission } from "./rapports"
 
 export const metadata: Metadata = { title: "Mission" }
@@ -16,7 +17,7 @@ export const metadata: Metadata = { title: "Mission" }
 export default async function PageMission({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   if (!z.uuid().safeParse(id).success) notFound()
-  const { supabase, organisation } = await exiger("missions.read_assigned", "dossiers.read_all", "dossiers.read_dept", "dossiers.read_own")
+  const { supabase, organisation } = await exiger(...LECTURE_MISSIONS)
   const { data, error } = await supabase.rpc("mission_detail", { p_mission: id })
   if (error) throw error
   const fiche = data as unknown as FicheMission | null

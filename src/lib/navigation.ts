@@ -2,11 +2,12 @@ import "server-only"
 
 import { getTranslations } from "next-intl/server"
 
-import { aUne, LECTURE_DOSSIERS, type Permission } from "@/lib/permissions"
+import { aUne, LECTURE_DOSSIERS, LECTURE_MISSIONS, type Permission } from "@/lib/permissions"
 
 export type IconeNav =
   | "tableau"
   | "missions"
+  | "planning"
   | "dossiers"
   | "nouveau"
   | "clients"
@@ -43,6 +44,7 @@ export async function menuNavigation(perms: readonly Permission[]): Promise<NavG
       items: [
         ...(general ? [{ titre: t("tableauDeBord"), url: "/tableau-de-bord", icone: "tableau" as const, permis: "tous" as const }] : []),
         { titre: t("missions"), url: "/missions", icone: "missions", permis: ["missions.read_assigned", "dossiers.read_assigned"] },
+        { titre: t("planning"), url: "/planning", icone: "planning", permis: LECTURE_MISSIONS },
         { titre: t("dossiers"), url: "/dossiers", icone: "dossiers", permis: LECTURE_DOSSIERS },
         { titre: t("nouveauDossier"), url: "/dossiers/nouveau", icone: "nouveau", permis: ["dossiers.create"] },
         { titre: t("clients"), url: "/clients", icone: "clients", permis: ["clients.read"] },
