@@ -22,10 +22,12 @@ export function ReceptionsCommande({ bon, ecriture }: { bon: BonCommande; ecritu
   })
   const ouverts = restes.filter(l => l.reste > 0)
 
+  const peutReceptionner = ecriture && ["emis", "recu_partiel"].includes(bon.statut)
+
   return <div className="grid gap-2 rounded-md border p-3">
     <h3 className="font-medium">Réceptions</h3>
     <ul className="grid gap-1">
-      {restes.map(l => <li key={l.id}>{l.description} · Reçu {l.recu}/{l.quantite} · Reste {l.reste}</li>)}
+      {restes.map(l => <li key={l.id}>{l.description} · Reçu {l.recu}/{l.quantite} · {bon.reliquat_annule_le ? "Reliquat annulé" : "Reste"} {l.reste}</li>)}
     </ul>
     {bon.receptions.map(r => <details key={r.id}>
       <summary className="cursor-pointer">{formatDate(r.date_reception)}{r.reference && " · " + r.reference}</summary>
@@ -34,7 +36,7 @@ export function ReceptionsCommande({ bon, ecriture }: { bon: BonCommande; ecritu
       </ul>
       {r.observations && <p className="whitespace-pre-wrap pl-4">{r.observations}</p>}
     </details>)}
-    {ecriture && ouverts.length > 0 && <details>
+    {peutReceptionner && ouverts.length > 0 && <details>
       <summary className="cursor-pointer font-medium">Consigner une réception</summary>
       <div className="pt-3"><FormulaireOperation bouton="Enregistrer les quantités reçues" enregistrer={async fd => {
         operation.current ??= crypto.randomUUID()

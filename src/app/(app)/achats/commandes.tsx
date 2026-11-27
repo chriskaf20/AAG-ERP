@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { formatDateHeure, formatMontant } from "@/lib/format"
 import { STATUTS_BON, type BonCommande } from "@/lib/achats"
-import { avancerCommande, enregistrerCommande } from "./actions"
+import { avancerCommande, enregistrerCommande, remplacerCommande } from "./actions"
 import { ReceptionsCommande } from "./receptions"
 
 type Choix = {
@@ -22,6 +22,7 @@ type Ligne = { id: string; description: string; quantite: number | string; prix_
 const vide = { description: "", quantite: 1, prix_unitaire: "" }
 
 function FormulaireBon({ choix, bon }: { choix: Choix; bon?: BonCommande }) {
+  const estRemplacement = !!bon?.bon_origine_id
   const [departement, setDepartement] = useState(bon?.department_id ?? "")
   const [lignes, setLignes] = useState<Ligne[]>(bon?.lignes ?? [{ id: "initiale", ...vide }])
   return <FormulaireOperation bouton="Enregistrer le brouillon" reinitialiser={false} enregistrer={enregistrerCommande.bind(null, bon?.id ?? null)}>
@@ -32,26 +33,28 @@ function FormulaireBon({ choix, bon }: { choix: Choix; bon?: BonCommande }) {
         {choix.fournisseurs.filter(f => f.actif || bon?.fournisseur_id === f.id)
           .map(f => <option key={f.id} value={f.id}>{f.nom}</option>)}
       </NativeSelect></Champ>
-      <Champ nom="Département"><NativeSelect name="departement" required value={departement} onChange={e => setDepartement(e.target.value)}>
+      <Champ nom="Département"><NativeSelect name="departement" required disabled={estRemplacement} value={departement} onChange={e => setDepartement(e.target.value)}>
         <option value="">Sélectionner</option>
         {choix.departements.map(d => <option key={d.id} value={d.id}>{d.nom}</option>)}
       </NativeSelect></Champ>
-      <Champ nom="Dossier"><NativeSelect name="dossier" key={departement} defaultValue={departement === bon?.department_id ? bon.dossier_id ?? "" : ""}>
+      <Champ nom="Dossier"><NativeSelect name="dossier" disabled={estRemplacement} key={departement} defaultValue={departement === bon?.department_id ? bon.dossier_id ?? "" : ""}>
         <option value="">Achat de fonctionnement</option>
         {choix.dossiers.filter(d => d.department_id === departement).map(d => <option key={d.id} value={d.id}>{d.numero}</option>)}
       </NativeSelect></Champ>
       <Champ nom="Devise"><NativeSelect name="devise" defaultValue={bon?.devise ?? "USD"}><option value="USD">USD</option><option value="CDF">CDF</option></NativeSelect></Champ>
     </div>
+    {estRemplacement && <><input type="hidden" name="departement" value={departement} />
+      <input type="hidden" name="dossier" value={bon.dossier_id ?? ""} /></>}
     {lignes.map((l, i) => <fieldset key={l.id} className="grid gap-2 rounded-md border p-3 sm:grid-cols-2 lg:grid-cols-4">
       <legend className="px-1 text-sm">Ligne {i + 1}</legend>
-      <Champ nom="Description"><Input name="description" required maxLength={500} defaultValue={l.description} /></Champ>
-      <Champ nom="Quantité"><Input name="quantite" type="number" min={0.001} step={0.001} required defaultValue={l.quantite} /></Champ>
+      <Champ nom="Description"><Input name="description" required readOnly={estRemplacement} maxLength={500} defaultValue={l.description} /></Champ>
+      <Champ nom="Quantité"><Input name="quantite" readOnly={estRemplacement} type="number" min={0.001} step={0.001} required defaultValue={l.quantite} /></Champ>
       <Champ nom="Prix unitaire HT"><Input name="prix_unitaire" type="number" min={0} step={0.01} required defaultValue={l.prix_unitaire} /></Champ>
-      {lignes.length > 1 && <Button type="button" variant="ghost" className="self-end"
+      {!estRemplacement && lignes.length > 1 && <Button type="button" variant="ghost" className="self-end"
         onClick={() => setLignes(lignes.filter(x => x.id !== l.id))}>Retirer la ligne</Button>}
     </fieldset>)}
-    <Button type="button" variant="outline" size="sm" className="self-start"
-      onClick={() => setLignes([...lignes, { id: crypto.randomUUID(), ...vide }])}>Ajouter une ligne</Button>
+    {!estRemplacement && <Button type="button" variant="outline" size="sm" className="self-start"
+      onClick={() => setLignes([...lignes, { id: crypto.randomUUID(), ...vide }])}>Ajouter une ligne</Button>}
   </FormulaireOperation>
 }
 
@@ -71,6 +74,8 @@ export function Commandes({ commandes, choix, gestion, validation }: {
       const departement = choix.departements.find(d => d.id === bon.department_id)
       const dossier = choix.dossiers.find(d => d.id === bon.dossier_id)
       const ecriture = gestion && !!departement
+      const origine = commandes.find(c => c.id === bon.bon_origine_id)
+      const remplacement = commandes.find(c => c.bon_origine_id === bon.id)
       const ouvert = ["brouillon", "a_valider", "valide"].includes(bon.statut)
       return <Card key={bon.id} id={bon.id}>
         <CardHeader><CardTitle className="flex flex-wrap gap-2">{bon.numero && bon.numero + " · "}{bon.objet}
@@ -82,7 +87,9 @@ export function Commandes({ commandes, choix, gestion, validation }: {
           <p className="font-medium">{formatMontant(bon.total_ht, bon.devise)} HT · {formatMontant(bon.total_ttc, bon.devise)} TTC</p>
           {bon.valide_le && <p>Validé par le gérant le {formatDateHeure(bon.valide_le)}</p>}
           {bon.emis_le && <p>Émis le {formatDateHeure(bon.emis_le)} · <a href={"/pdf/commandes/" + bon.id} target="_blank" rel="noreferrer" className="underline">Ouvrir le bon PDF</a></p>}
-          {bon.motif_annulation && <p>{bon.motif_annulation}</p>}
+          {bon.motif_annulation && <p>Motif de l’annulation : {bon.motif_annulation}</p>}
+          {origine && <a className="underline" href={"#" + origine.id}>Remplace le bon {origine.numero}</a>}
+          {remplacement && <a className="underline" href={"#" + remplacement.id}>Bon de remplacement{remplacement.numero ? " " + remplacement.numero : " (brouillon)"}</a>}
           {bon.emis_le && <ReceptionsCommande bon={bon} ecriture={ecriture} />}
           {ecriture && bon.statut === "brouillon" && <details>
             <summary className="cursor-pointer">Modifier le brouillon</summary><div className="pt-3"><FormulaireBon choix={choix} bon={bon} /></div>
@@ -93,6 +100,13 @@ export function Commandes({ commandes, choix, gestion, validation }: {
             {ecriture && bon.statut === "valide" && <FormulaireOperation bouton="Émettre le bon" enregistrer={avancerCommande.bind(null, bon.id, "emettre")} />}
             {ecriture && ouvert && bon.statut !== "brouillon" && <FormulaireOperation bouton="Reprendre le brouillon" enregistrer={avancerCommande.bind(null, bon.id, "reprendre")} />}
           </div>
+          {ecriture && (bon.statut === "emis" || bon.statut === "recu_partiel") && <details>
+            <summary className="cursor-pointer">Annuler et remplacer le reliquat</summary>
+            <div className="pt-3"><FormulaireOperation bouton="Créer le bon de remplacement" enregistrer={remplacerCommande.bind(null, bon.id)}>
+              <p>Les réceptions restent sur ce bon. Le reliquat passe dans un nouveau brouillon à soumettre.</p>
+              <Champ nom="Motif"><Input name="motif" required /></Champ>
+            </FormulaireOperation></div>
+          </details>}
           {ecriture && ouvert && <details><summary className="cursor-pointer">Annuler le bon</summary>
             <div className="pt-3"><FormulaireOperation bouton="Confirmer l’annulation" enregistrer={avancerCommande.bind(null, bon.id, "annuler")}>
               <Champ nom="Motif"><Input name="motif" required /></Champ>

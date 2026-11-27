@@ -210,6 +210,7 @@ export type Database = {
       }
       bons_commande: {
         Row: {
+          bon_origine_id: string | null
           created_at: string
           created_by: string | null
           department_id: string
@@ -218,10 +219,12 @@ export type Database = {
           emis_le: string | null
           fournisseur_id: string
           id: string
+          mentions_emission: Json | null
           motif_annulation: string | null
           numero: string | null
           objet: string
           organization_id: string
+          reliquat_annule_le: string | null
           statut: string
           taux_cdf: number
           taxes: Json
@@ -232,6 +235,7 @@ export type Database = {
           valide_par: string | null
         }
         Insert: {
+          bon_origine_id?: string | null
           created_at?: string
           created_by?: string | null
           department_id: string
@@ -240,10 +244,12 @@ export type Database = {
           emis_le?: string | null
           fournisseur_id: string
           id?: string
+          mentions_emission?: Json | null
           motif_annulation?: string | null
           numero?: string | null
           objet: string
           organization_id: string
+          reliquat_annule_le?: string | null
           statut?: string
           taux_cdf: number
           taxes: Json
@@ -254,6 +260,7 @@ export type Database = {
           valide_par?: string | null
         }
         Update: {
+          bon_origine_id?: string | null
           created_at?: string
           created_by?: string | null
           department_id?: string
@@ -262,10 +269,12 @@ export type Database = {
           emis_le?: string | null
           fournisseur_id?: string
           id?: string
+          mentions_emission?: Json | null
           motif_annulation?: string | null
           numero?: string | null
           objet?: string
           organization_id?: string
+          reliquat_annule_le?: string | null
           statut?: string
           taux_cdf?: number
           taxes?: Json
@@ -302,6 +311,13 @@ export type Database = {
             columns: ["organization_id", "fournisseur_id"]
             isOneToOne: false
             referencedRelation: "fournisseurs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "bons_commande_origine_fk"
+            columns: ["organization_id", "bon_origine_id"]
+            isOneToOne: false
+            referencedRelation: "bons_commande"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -3355,6 +3371,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      remplacer_bon_commande: {
+        Args: { p_bon: string; p_motif: string; p_org: string }
+        Returns: string
+      }
       receptionner_achat: {
         Args: { p_org: string; p_bon: string; p_operation: string; p_date: string; p_reference: string | null; p_observations: string | null; p_lignes: Json }
         Returns: string

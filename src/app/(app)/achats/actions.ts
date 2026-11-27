@@ -67,3 +67,17 @@ export async function receptionnerCommande(id: string, operation: string, fd: Fo
   revalidatePath("/achats")
   return { ok: true, message: "Réception enregistrée" }
 }
+
+export async function remplacerCommande(id: string, fd: FormData) {
+  const { ctx, refus } = await autoriser("achats.write")
+  if (refus) return refus
+  const saisie = z.object({ id: z.uuid(), motif: z.string().trim().min(1).max(500) })
+    .safeParse({ id, motif: fd.get("motif") })
+  if (!saisie.success) return { message: "Indiquez le motif de l’annulation du reliquat." }
+  const { error } = await ctx.supabase.rpc("remplacer_bon_commande", {
+    p_org: ctx.organisation.id, p_bon: saisie.data.id, p_motif: saisie.data.motif,
+  })
+  if (error) return { message: messageErreur(error) }
+  revalidatePath("/achats")
+  return { ok: true, message: "Reliquat annulé et brouillon de remplacement créé" }
+}

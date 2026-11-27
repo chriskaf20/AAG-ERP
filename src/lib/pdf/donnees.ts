@@ -167,20 +167,24 @@ export async function donneesCommande(db: Db, id: string, orgId: string): Promis
     .eq("id", id).eq("organization_id", orgId).maybeSingle()
   if (error) throw error
   if (!bon?.numero || !bon.emis_le) return null
+  const mentions = bon.mentions_emission as Pick<CommandePdfProps, "org" | "fournisseur" | "dossierNumero"> | null
   const [org, fournisseur, lignes, dossier] = await Promise.all([
-    db.from("organizations").select("nom, sigle, rccm, nif, id_nat, adresse, telephone, email").eq("id", orgId).maybeSingle(),
-    db.from("fournisseurs").select("nom, rccm, nif, contact, email, telephone").eq("id", bon.fournisseur_id)
+    mentions ? null : db.from("organizations").select("nom, sigle, rccm, nif, id_nat, adresse, telephone, email").eq("id", orgId).maybeSingle(),
+    mentions ? null : db.from("fournisseurs").select("nom, rccm, nif, contact, email, telephone").eq("id", bon.fournisseur_id)
       .eq("organization_id", orgId).maybeSingle(),
     db.from("bon_commande_lignes").select("id, description, quantite, prix_unitaire").eq("bon_id", bon.id)
       .eq("organization_id", orgId).order("ordre"),
-    bon.dossier_id ? db.from("dossiers").select("numero").eq("id", bon.dossier_id).eq("organization_id", orgId).maybeSingle() : null,
+    !mentions && bon.dossier_id ? db.from("dossiers").select("numero").eq("id", bon.dossier_id).eq("organization_id", orgId).maybeSingle() : null,
   ])
   for (const resultat of [org, fournisseur, lignes, dossier]) if (resultat?.error) throw resultat.error
-  if (!org.data || !fournisseur.data || !lignes.data) return null
-  const f = fournisseur.data
-  return {
+  const f = fournisseur?.data
+  const contexte = mentions ?? (org?.data && f ? {
     org: org.data, fournisseur: { ...f, raison_sociale: f.nom, adresse: null, id_nat: null },
-    dossierNumero: dossier?.data?.numero ?? null, bon, lignes: lignes.data,
+    dossierNumero: dossier?.data?.numero ?? null,
+  } : null)
+  if (!contexte || !lignes.data) return null
+  return {
+    ...contexte, bon, lignes: lignes.data,
     totaux: { ...bon, total_brut: bon.total_ht, total_remise: 0, total_taxes: bon.total_ttc - bon.total_ht, taxes: taxes(bon.taxes) },
   }
 }
