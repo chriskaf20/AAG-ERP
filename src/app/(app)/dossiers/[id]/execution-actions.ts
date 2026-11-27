@@ -59,6 +59,18 @@ export async function gererLivrable(dossier: string, fd: FormData, id?: string) 
   return resultat(dossier, error, id ? "Remise consignée" : "Livrable ajouté")
 }
 
+export async function suivreIncident(dossier: string, incident: string, fd: FormData) {
+  const { supabase, organisation } = await getContexte()
+  const suivi = z.object({
+    statut: z.enum(["ouvert", "en_traitement"]), responsable_id: z.uuid().nullable(),
+    action_corrective: z.string().nullable(),
+  }).safeParse({ statut: texte(fd, "statut"), responsable_id: texte(fd, "responsable"), action_corrective: texte(fd, "action") })
+  if (!suivi.success) return { message: "Le suivi de l’incident est invalide." }
+  const { error } = await supabase.from("incidents").update(suivi.data)
+    .eq("id", incident).eq("dossier_id", dossier).eq("organization_id", organisation.id).select("id").single()
+  return resultat(dossier, error, "Suivi de l’incident enregistré")
+}
+
 export async function cloreIncident(dossier: string, incident: string, fd: FormData) {
   const { supabase, organisation } = await getContexte()
   const action = texte(fd, "action")

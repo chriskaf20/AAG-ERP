@@ -11,6 +11,7 @@ import type { FicheMission } from "@/lib/missions"
 import { SaisieIncident } from "../saisie-incident"
 import { enregistrerRapport, reprendreRapport, terminerRapport } from "../actions"
 import { DepotPhotos } from "./depot-photos"
+import { PositionRapport } from "./position-rapport"
 
 export function RapportsMission({ fiche }: { fiche: FicheMission }) {
   const [depotEnAttente, setDepotEnAttente] = useState(false)
@@ -28,6 +29,9 @@ export function RapportsMission({ fiche }: { fiche: FicheMission }) {
             enregistrer={enregistrerRapport.bind(null, mission.id, dossier.id, brouillon?.id ?? null)}>
             <Champ nom="Travaux réalisés"><Textarea name="travaux" required defaultValue={brouillon?.travaux} /></Champ>
             <Champ nom="Observations"><Textarea name="observations" defaultValue={brouillon?.observations ?? ""} /></Champ>
+            {mission.type === "terrain" && <PositionRapport initiale={brouillon && brouillon.latitude !== null && brouillon.longitude !== null ? {
+              latitude: brouillon.latitude, longitude: brouillon.longitude, precision_m: brouillon.precision_m,
+            } : null} />}
           </FormulaireOperation>}
         {rapports.map(r => <article key={r.id} className="grid gap-3 rounded-lg border p-3 text-sm">
           <div className="flex flex-wrap gap-2">
@@ -37,6 +41,7 @@ export function RapportsMission({ fiche }: { fiche: FicheMission }) {
           <a href={"/pdf/interventions/" + r.id} target="_blank" rel="noreferrer" className="w-fit underline">Ouvrir le rapport PDF</a>
           <p className="whitespace-pre-wrap">{r.travaux}</p>
           {r.observations && <p className="whitespace-pre-wrap">{r.observations}</p>}
+          {r.latitude !== null && r.longitude !== null && <p>Position GPS {r.latitude}, {r.longitude}</p>}
           {r.redacteur && <p>Rédigé par {r.redacteur}</p>}
           {r.valide_le && <p>Validé par {r.valideur ?? "le responsable"} · {formatDateHeure(r.valide_le)}</p>}
           {r.signature && <div className="grid gap-2">

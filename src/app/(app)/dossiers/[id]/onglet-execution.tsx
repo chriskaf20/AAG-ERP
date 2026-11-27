@@ -13,7 +13,7 @@ import type { Membre } from "@/lib/membres"
 import type { DroitsDossier } from "@/lib/permissions"
 import { SaisieIncident } from "@/app/(app)/missions/saisie-incident"
 import { STATUT_MISSION } from "@/lib/missions"
-import { annulerMission, cloreIncident, consignerPoint, gererAffectationMission, gererLivrable, planifierMission } from "./execution-actions"
+import { annulerMission, cloreIncident, consignerPoint, gererAffectationMission, gererLivrable, planifierMission, suivreIncident } from "./execution-actions"
 
 const EMAIL = { consigne: "Consigné", simule: "Envoi simulé", ignore: "Adresse ignorée", en_attente: "Envoi en attente", envoye: "Envoyé", echec: "Échec d’envoi" }
 const GRAVITE = { faible: "Faible", moyenne: "Moyenne", elevee: "Élevée" }
@@ -113,9 +113,23 @@ export function OngletExecution({ dossier, missions, equipes, membres, livrables
             <Badge variant="outline">{{ ouvert: "Ouvert", en_traitement: "En traitement", clos: "Clos" }[i.statut]}</Badge></div>
           <p className="whitespace-pre-wrap">{i.description}</p>
           {i.action_corrective && <p>{i.action_corrective}</p>}
+          {i.responsable_id && <p>Responsable · {membres.find(m => m.id === i.responsable_id)?.nom ?? "Membre interne"}</p>}
+          {i.date_cloture && <p>Clos le {formatDateHeure(i.date_cloture)}</p>}
+          {droits.execution_write && i.statut !== "clos" && <details className="text-sm"><summary className="cursor-pointer">Suivre l’incident</summary>
+            <div className="pt-2"><FormulaireOperation bouton="Enregistrer le suivi" reinitialiser={false} enregistrer={suivreIncident.bind(null, dossier.id, i.id)}>
+              <Champ nom="Responsable"><NativeSelect name="responsable" defaultValue={i.responsable_id ?? ""}>
+                <option value="">Sans responsable</option>
+                {membres.map(m => <option key={m.id} value={m.id}>{m.nom}</option>)}
+              </NativeSelect></Champ>
+              <Champ nom="État"><NativeSelect name="statut" defaultValue={i.statut}>
+                <option value="ouvert">Ouvert</option><option value="en_traitement">En traitement</option>
+              </NativeSelect></Champ>
+              <Champ nom="Action corrective"><Textarea name="action" defaultValue={i.action_corrective ?? ""} /></Champ>
+            </FormulaireOperation></div>
+          </details>}
           {droits.execution_write && i.statut !== "clos" && <details><summary className="cursor-pointer">Clore l’incident</summary>
             <div className="pt-2"><FormulaireOperation bouton="Clore" enregistrer={cloreIncident.bind(null, dossier.id, i.id)}>
-              <Champ nom="Action corrective"><Textarea name="action" required /></Champ>
+              <Champ nom="Action corrective"><Textarea name="action" required defaultValue={i.action_corrective ?? ""} /></Champ>
             </FormulaireOperation></div>
           </details>}
         </article>)}

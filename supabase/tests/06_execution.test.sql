@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(45);
+select plan(47);
 
 create function pg_temp.en(p_sub text) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub', p_sub, 'role', 'authenticated')::text, true);
@@ -198,6 +198,11 @@ update public.livrables set remis_le = now() where id = 'ad000000-0000-4000-8000
 select throws_ok($$select public.change_dossier_status('f0000000-0000-4000-8000-000000000001', 'livre')$$,
                  '23514', 'Livraison impossible : un incident de gravité élevée est encore ouvert',
                  'livre impossible : incident de gravité élevée ouvert');
+select throws_ok($$update public.incidents set responsable_id = '10000000-0000-4000-8000-000000000012'
+                    where dossier_id = 'f0000000-0000-4000-8000-000000000001'$$,
+                 '23514', null, 'incident : un compte client ne peut pas devenir responsable');
+select lives_ok($$update public.incidents set statut = 'en_traitement', responsable_id = '10000000-0000-4000-8000-000000000011'
+                    where dossier_id = 'f0000000-0000-4000-8000-000000000001'$$, 'le pilote peut affecter et suivre un incident');
 select throws_ok($$update public.incidents set statut = 'clos'
                     where dossier_id = 'f0000000-0000-4000-8000-000000000001'$$,
                  '23514', null, 'incident : action corrective obligatoire pour clôturer');

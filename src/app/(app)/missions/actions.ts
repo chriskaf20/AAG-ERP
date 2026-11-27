@@ -31,7 +31,20 @@ export async function enregistrerRapport(mission: string, dossier: string, rappo
   const { supabase, organisation } = await getContexte()
   const travaux = texte(fd, "travaux")
   if (!travaux) return { message: "Décrivez les travaux réalisés." }
-  const valeurs = { travaux, observations: texte(fd, "observations") }
+  const coordonnees = ["latitude", "longitude", "precision_m"] as const
+  const position = fd.has("latitude") ? z.tuple([
+    z.number().min(-90).max(90).nullable(),
+    z.number().min(-180).max(180).nullable(),
+    z.number().min(0).max(9_999_999.9).nullable(),
+  ]).safeParse(coordonnees.map(c => {
+    const valeur = texte(fd, c)
+    return valeur === null ? null : Number(valeur)
+  })) : null
+  if (position && (!position.success || (position.data[0] === null) !== (position.data[1] === null) ||
+    (position.data[0] === null && position.data[2] !== null))) return { message: "Les coordonnées GPS sont invalides." }
+  const valeurs = { travaux, observations: texte(fd, "observations"), ...(position?.success ? {
+    latitude: position.data[0], longitude: position.data[1], precision_m: position.data[2],
+  } : {}) }
   const requete = rapport
     ? supabase.from("rapports_intervention").update(valeurs).eq("id", rapport).eq("mission_id", mission).eq("organization_id", organisation.id)
     : supabase.from("rapports_intervention").insert({ ...valeurs, organization_id: organisation.id, mission_id: mission, dossier_id: dossier })
