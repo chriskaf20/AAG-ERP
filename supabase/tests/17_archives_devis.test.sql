@@ -57,6 +57,8 @@ set local role authenticated;
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated"}',true);
 select throws_ok($$update public.documents set libelle='Réécrit' where id=(select val::uuid from _ctx where cle='archive')$$,
   '42501',null,'les métadonnées du document signé sont figées');
+-- Émule l’opération Storage uniquement pour ce test transactionnel.
+set local storage.allow_delete_query = 'true';
 with supprime as (delete from storage.objects where name=(select val from _ctx where cle='chemin_archive')
   returning id) select is(count(*),0::bigint,'le fichier archivé ne peut plus être supprimé depuis Storage') from supprime;
 

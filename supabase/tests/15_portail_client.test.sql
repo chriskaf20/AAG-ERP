@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(22);
+select plan(23);
 
 create temp table _p(cle text primary key,id uuid);
 grant all on _p to authenticated;
@@ -83,6 +83,9 @@ select is((select count(*) from public.dossiers),0::bigint,'le rôle client ne l
 
 select set_config('storage.operation','object.list',true);
 select is((select count(*) from storage.objects where bucket_id in ('dossiers','clients')),0::bigint,'le portail ne permet pas de lister les buckets');
+select set_config('storage.operation','object.sign',true);
+select is((select count(*) from storage.objects where bucket_id in ('dossiers','clients')),0::bigint,
+  'le compte client ne peut pas créer d’URL signée réutilisable après révocation');
 select set_config('storage.operation','object.get_authenticated',true);
 select is((select count(*) from storage.objects where bucket_id in ('dossiers','clients')),2::bigint,'Storage autorise seulement les deux fichiers partagés');
 
