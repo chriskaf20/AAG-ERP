@@ -10,6 +10,7 @@ import { NativeSelect } from "@/components/ui/native-select"
 import { formatDateHeure, formatMontant } from "@/lib/format"
 import { STATUTS_BON, type BonCommande } from "@/lib/achats"
 import { avancerCommande, enregistrerCommande } from "./actions"
+import { ReceptionsCommande } from "./receptions"
 
 type Choix = {
   fournisseurs: { id: string; nom: string; actif: boolean }[]
@@ -82,6 +83,7 @@ export function Commandes({ commandes, choix, gestion, validation }: {
           {bon.valide_le && <p>Validé par le gérant le {formatDateHeure(bon.valide_le)}</p>}
           {bon.emis_le && <p>Émis le {formatDateHeure(bon.emis_le)} · <a href={"/pdf/commandes/" + bon.id} target="_blank" rel="noreferrer" className="underline">Ouvrir le bon PDF</a></p>}
           {bon.motif_annulation && <p>{bon.motif_annulation}</p>}
+          {bon.emis_le && <ReceptionsCommande bon={bon} ecriture={ecriture} />}
           {ecriture && bon.statut === "brouillon" && <details>
             <summary className="cursor-pointer">Modifier le brouillon</summary><div className="pt-3"><FormulaireBon choix={choix} bon={bon} /></div>
           </details>}

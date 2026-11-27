@@ -360,6 +360,115 @@ export type Database = {
           },
         ]
       }
+      receptions_achat: {
+        Row: {
+          bon_id: string
+          created_at: string
+          created_by: string | null
+          date_reception: string
+          id: string
+          observations: string | null
+          organization_id: string
+          reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          bon_id: string
+          created_at?: string
+          created_by?: string | null
+          date_reception: string
+          id: string
+          observations?: string | null
+          organization_id: string
+          reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bon_id?: string
+          created_at?: string
+          created_by?: string | null
+          date_reception?: string
+          id?: string
+          observations?: string | null
+          organization_id?: string
+          reference?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receptions_achat_organization_id_bon_id_fkey"
+            columns: ["organization_id", "bon_id"]
+            isOneToOne: false
+            referencedRelation: "bons_commande"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "receptions_achat_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reception_achat_lignes: {
+        Row: {
+          bon_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          ligne_id: string
+          organization_id: string
+          quantite: number
+          reception_id: string
+          updated_at: string
+        }
+        Insert: {
+          bon_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ligne_id: string
+          organization_id: string
+          quantite: number
+          reception_id: string
+          updated_at?: string
+        }
+        Update: {
+          bon_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ligne_id?: string
+          organization_id?: string
+          quantite?: number
+          reception_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reception_achat_lignes_organization_id_bon_id_ligne_id_fkey"
+            columns: ["organization_id", "bon_id", "ligne_id"]
+            isOneToOne: false
+            referencedRelation: "bon_commande_lignes"
+            referencedColumns: ["organization_id", "bon_id", "id"]
+          },
+          {
+            foreignKeyName: "reception_achat_lignes_organization_id_bon_id_reception_id_fkey"
+            columns: ["organization_id", "bon_id", "reception_id"]
+            isOneToOne: false
+            referencedRelation: "receptions_achat"
+            referencedColumns: ["organization_id", "bon_id", "id"]
+          },
+          {
+            foreignKeyName: "reception_achat_lignes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       livrables: {
         Row: {
           created_at: string
@@ -3246,6 +3355,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      receptionner_achat: {
+        Args: { p_org: string; p_bon: string; p_operation: string; p_date: string; p_reference: string | null; p_observations: string | null; p_lignes: Json }
+        Returns: string
+      }
       enregistrer_bon_commande: {
         Args: { p_org: string; p_fournisseur: string; p_departement: string; p_dossier: string | null; p_objet: string; p_devise: Database["public"]["Enums"]["devise"]; p_lignes: Json; p_bon?: string }
         Returns: string

@@ -45,3 +45,25 @@ export async function avancerCommande(id: string, action: string, fd: FormData) 
   revalidatePath("/achats")
   return { ok: true, message: "État du bon de commande mis à jour" }
 }
+
+export async function receptionnerCommande(id: string, operation: string, fd: FormData) {
+  const { ctx, refus } = await autoriser("achats.write")
+  if (refus) return refus
+  const quantites = [...fd.entries()].filter(([cle, valeur]) => cle.startsWith("recu-") && valeur !== "")
+    .map(([cle, valeur]) => ({ ligne_id: cle.slice(5), quantite: valeur }))
+  const saisie = z.object({
+    id: z.uuid(), operation: z.uuid(), date: z.iso.date(),
+    lignes: z.array(z.object({ ligne_id: z.uuid(), quantite: z.coerce.number().min(0) })).min(1),
+  }).safeParse({ id, operation, date: fd.get("date_reception"), lignes: quantites })
+  if (!saisie.success) return { message: "Vérifiez la date et les quantités reçues." }
+  const lignes = saisie.data.lignes.filter(l => l.quantite > 0)
+  if (!lignes.length) return { message: "Saisissez au moins une quantité reçue." }
+
+  const { error } = await ctx.supabase.rpc("receptionner_achat", {
+    p_org: ctx.organisation.id, p_bon: saisie.data.id, p_operation: saisie.data.operation,
+    p_date: saisie.data.date, p_reference: texte(fd, "reference"), p_observations: texte(fd, "observations"), p_lignes: lignes,
+  })
+  if (error) return { message: messageErreur(error) }
+  revalidatePath("/achats")
+  return { ok: true, message: "Réception enregistrée" }
+}
