@@ -64,6 +64,7 @@ export const dossierSchema = z
     contact_telephone: optionnel,
     contact_email: emailOptionnel,
     service: z.string().trim().min(2, "Service demandé requis"),
+    type_site_web: z.enum(["", "creation", "refonte"], "Type de projet invalide").optional(),
     besoin: z.string().trim().min(5, "Description du besoin requise"),
     delai_souhaite: date,
     budget_indicatif: z

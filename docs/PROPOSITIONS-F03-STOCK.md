@@ -1,10 +1,10 @@
-# Propositions à valider pour le F‑03 et le stock
+# F‑03 structuré et proposition de valorisation du stock
 
-Le F‑03 reste un document déposé et versionné. Le stock reste suivi en quantité par article et par emplacement, avec l’historique de ses mouvements. Les règles ci-dessous sont proposées pour une version ultérieure.
+Le F‑03 structuré coexiste avec les pièces F‑03 déposées et leur historique. Le stock reste suivi en quantité par article et par emplacement, avec l’historique de ses mouvements. Le calcul de valorisation reste une proposition pour le DAF.
 
-## F‑03 structuré pour les dossiers de création de site web
+## F‑03 structuré pour la création et la refonte de site web
 
-Le dossier, son client, la version et l’identifiant de l’auteur sont renseignés par l’ERP. Le F‑03 reprend le cadre du devis signé lorsqu’il existe. Les champs suivants seraient obligatoires à la soumission.
+Le dossier, son client, la version et l’identifiant de l’auteur sont renseignés par l’ERP. La version conserve la référence du dernier devis signé disponible à sa création. Les champs suivants sont obligatoires à la soumission.
 
 | Champ | Contenu attendu |
 | --- | --- |
@@ -16,11 +16,11 @@ Le dossier, son client, la version et l’identifiant de l’auteur sont renseig
 | Réception | Critères observables pour le F‑05 et tâches convenues de formation ou de remise des accès. |
 | Interlocuteur client | Personne habilitée à confirmer le périmètre pour le client. |
 
-Le responsable désigné du dossier rédigerait et soumettrait la version. Le responsable du département Digital validerait le périmètre technique ou renverrait le document avec un motif. Le gérant ou le directeur des opérations pourrait effectuer cette validation en remplacement. L’accord du client sur le périmètre serait consigné sur la même version. Une version validée serait figée. Toute modification donnerait lieu à une nouvelle version avec son historique.
+Le responsable désigné du dossier rédige et soumet la version. Le responsable du département Digital de la même organisation la valide ou demande des corrections avec un motif. Le responsable du dossier consigne l’accord du client sur la version courante soumise ou validée, avec sa date et sa référence. Le contenu est figé dès la soumission. Une version corrigée ou mise à jour ouvre un nouveau numéro avec ses propres approbations.
 
-Le contrôle bloquant proposé s’appliquerait au passage de **En lancement** à **En cours** pour les dossiers de création de site web identifiés par leur service. Il vérifierait que la dernière version soumise a été validée et que l’accord client a été consigné. Le pilote pourrait préparer le devis et le lancement tant que ces étapes restent en cours. Une modification postérieure au démarrage ferait l’objet d’une nouvelle validation. Le traitement des travaux déjà en cours pendant cette révision reste à décider.
+Pour une création ou une refonte, tout passage en **En cours** exige la validation Digital et l’accord client sur la dernière version enregistrée, même si cette version est encore en brouillon. L’ouverture d’une révision ne change pas le statut d’un dossier déjà en cours. Si le dossier doit repasser en cours, la version courante est de nouveau contrôlée.
 
-**Décision attendue** — Confirmer les champs et les services concernés, les remplaçants du valideur et la preuve requise pour l’accord client. Confirmer la transition à bloquer et le traitement d’une révision après démarrage. Aucun blocage F‑03 n’est activé.
+Le F‑01 permet de préciser le type de projet web. La migration reprend les libellés usuels tels que « Site web », « Création de site web » et « Refonte du site Internet ». Vérifier les anciens libellés libres atypiques au moment de préparer la bascule.
 
 ## Valorisation du stock proposée au DAF
 
@@ -37,5 +37,18 @@ Le contrôle bloquant proposé s’appliquerait au passage de **En lancement** �
 | Retour fournisseur | Sortie au coût moyen en vigueur avec lien vers la réception. Consigner séparément l’écart avec le montant de l’avoir fournisseur. |
 | Retour d’un dossier ou d’un client | Entrée au coût de la sortie d’origine, avec lien vers cette sortie. Un retour sans sortie identifiable est à valider par le DAF. |
 | Quantité initiale | Quantité rapprochée à l’inventaire et coût d’ouverture approuvé par le DAF à une date de bascule fixée. |
+
+### Exemple chiffré pour le DAF
+
+Un article a un stock initial de 10 unités à 8 USD, soit 80 USD. À la date de réception, l’exemple suppose un cours de 2 400 CDF pour 1 USD. Ce taux est fictif. Le coût de réception est net, avec les frais imputables déjà inclus.
+
+| Mouvement | Quantité en stock | Valeur du mouvement | Valeur après mouvement | CUMP après mouvement |
+| --- | ---: | ---: | ---: | ---: |
+| Stock initial | 10 | 80 USD | 80 USD | 8 USD |
+| Réception de 10 unités pour 240 000 CDF | 20 | +100 USD | 180 USD | 9 USD |
+| Ajustement négatif de 2 unités après inventaire | 18 | −18 USD | 162 USD | 9 USD |
+| Retour de 3 unités au fournisseur | 15 | −27 USD | 135 USD | 9 USD |
+
+Si le fournisseur émet un avoir de 72 000 CDF, valorisé à 30 USD au même taux fictif, l’écart de 3 USD avec la sortie de stock serait enregistré séparément. Les 15 unités restantes garderaient un coût moyen de 9 USD.
 
 **Décision attendue** — Valider la méthode, l’unité de valorisation, la source et la date du change, les coûts de retour et d’ajustement, ainsi que le traitement des frais communs. Fixer le coût d’ouverture et la date de bascule. Décider aussi comment corriger une réception après rapprochement avec la facture fournisseur et comment traiter un mouvement antidaté après clôture. Aucun calcul de valorisation n’est activé.

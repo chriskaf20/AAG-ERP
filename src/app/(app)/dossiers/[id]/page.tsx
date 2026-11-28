@@ -174,6 +174,11 @@ export default async function FicheDossier({ params, searchParams }: PageProps<"
                     {ligne("Date de réception", formatDate(d.date_reception))}
                     {ligne("Canal", t(`canaux.${d.canal}`))}
                     {ligne("Service demandé", d.service)}
+                    {d.type_site_web && (droits.suivi_read || d.responsable_id === ctx.userId) && ligne("Cahier des charges", (
+                      <Link href={`/f03/${d.id}`} className="font-medium text-primary underline underline-offset-2">
+                        Ouvrir le F-03 structuré
+                      </Link>
+                    ))}
                     {ligne("Besoin", <span className="whitespace-pre-line">{d.besoin}</span>)}
                     {ligne("Délai souhaité", formatDate(d.delai_souhaite))}
                     {ligne("Budget indicatif", formatMontant(d.budget_indicatif, d.budget_devise))}

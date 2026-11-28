@@ -2484,8 +2484,101 @@ export type Database = {
           },
         ]
       }
+      f03_versions: {
+        Row: {
+          id: string
+          organization_id: string
+          dossier_id: string
+          version: number
+          contenu: Json
+          devis_reference: string | null
+          etat: string
+          soumis_le: string | null
+          decision_le: string | null
+          decision_par: string | null
+          motif: string | null
+          accord_date: string | null
+          accord_reference: string | null
+          accord_enregistre_le: string | null
+          accord_par: string | null
+          created_at: string
+          created_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          dossier_id: string
+          version: number
+          contenu: Json
+          devis_reference?: string | null
+          etat?: string
+          soumis_le?: string | null
+          decision_le?: string | null
+          decision_par?: string | null
+          motif?: string | null
+          accord_date?: string | null
+          accord_reference?: string | null
+          accord_enregistre_le?: string | null
+          accord_par?: string | null
+          created_at?: string
+          created_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          dossier_id?: string
+          version?: number
+          contenu?: Json
+          devis_reference?: string | null
+          etat?: string
+          soumis_le?: string | null
+          decision_le?: string | null
+          decision_par?: string | null
+          motif?: string | null
+          accord_date?: string | null
+          accord_reference?: string | null
+          accord_enregistre_le?: string | null
+          accord_par?: string | null
+          created_at?: string
+          created_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "f03_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "f03_versions_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "f03_versions_decision_par_fkey"
+            columns: ["decision_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "f03_versions_accord_par_fkey"
+            columns: ["accord_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       dossiers: {
         Row: {
+          type_site_web: string | null
           receptionne_le: string | null
           reception_tacite: boolean
           garantie_fin: string | null
@@ -2516,6 +2609,7 @@ export type Database = {
         }
         Insert: {
           receptionne_le?: string | null
+          type_site_web?: string | null
           reception_tacite?: boolean
           garantie_fin?: string | null
           accuse_reception_envoye?: boolean
@@ -2545,6 +2639,7 @@ export type Database = {
         }
         Update: {
           receptionne_le?: string | null
+          type_site_web?: string | null
           reception_tacite?: boolean
           garantie_fin?: string | null
           accuse_reception_envoye?: boolean
@@ -3667,6 +3762,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      dossiers_f03: {
+        Args: { p_org: string; p_dossier?: string }
+        Returns: { id: string; numero: string; service: string; type_site_web: string; client: string; peut_rediger: boolean; peut_valider: boolean }[]
+      }
+      peut_valider_f03: { Args: { p_org: string }; Returns: boolean }
+      peut_rediger_f03: { Args: { p_org: string; p_dossier: string }; Returns: boolean }
+      enregistrer_f03: {
+        Args: { p_org: string; p_dossier: string; p_version: number; p_contenu: Json; p_soumettre: boolean; p_modifie_le?: string }
+        Returns: string
+      }
+      decider_f03: {
+        Args: { p_org: string; p_dossier: string; p_version: number; p_valide: boolean; p_motif?: string }
+        Returns: undefined
+      }
+      consigner_accord_f03: {
+        Args: { p_org: string; p_dossier: string; p_version: number; p_date: string; p_reference: string }
+        Returns: undefined
+      }
       preparer_invitation: {
         Args: { p_org: string; p_email: string; p_nom: string; p_fonction: string | null; p_role: Database["public"]["Enums"]["app_role"]; p_departement: string | null }
         Returns: string

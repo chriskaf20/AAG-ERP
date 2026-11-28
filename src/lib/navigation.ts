@@ -50,6 +50,7 @@ export async function menuNavigation(perms: readonly Permission[], portail = fal
         { titre: t("missions"), url: "/missions", icone: "missions", permis: ["missions.read_assigned", "dossiers.read_assigned"] },
         { titre: t("planning"), url: "/planning", icone: "planning", permis: LECTURE_MISSIONS },
         { titre: t("dossiers"), url: "/dossiers", icone: "dossiers", permis: LECTURE_DOSSIERS },
+        { titre: "Cahiers des charges F-03", url: "/f03", icone: "dossiers", permis: LECTURE_DOSSIERS },
         { titre: t("nouveauDossier"), url: "/dossiers/nouveau", icone: "nouveau", permis: ["dossiers.create"] },
         { titre: t("clients"), url: "/clients", icone: "clients", permis: ["clients.read"] },
         ...(portail ? [{ titre: "Portail client", url: "/portail", icone: "portail" as const, permis: "tous" as const }] : []),

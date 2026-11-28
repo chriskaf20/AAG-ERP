@@ -253,6 +253,16 @@ export function FormulaireF01({
               <Input id="service" name="service" aria-invalid={invalide("service")} />
               <FieldError>{e("service")}</FieldError>
             </Field>
+              <Field data-invalid={invalide("type_site_web")}>
+                <FieldLabel htmlFor="type_site_web">Type de projet web</FieldLabel>
+                <NativeSelect id="type_site_web" name="type_site_web" aria-invalid={invalide("type_site_web")}>
+                  <NativeSelectOption value="">Selon le service demandé</NativeSelectOption>
+                  <NativeSelectOption value="creation">Création de site web</NativeSelectOption>
+                  <NativeSelectOption value="refonte">Refonte de site web</NativeSelectOption>
+                </NativeSelect>
+                <FieldDescription>Choisissez le type si le libellé du service ne le précise pas.</FieldDescription>
+                <FieldError>{e("type_site_web")}</FieldError>
+              </Field>
             <Field className="sm:col-span-2" data-invalid={invalide("besoin")}>
               <FieldLabel htmlFor="besoin">Description du besoin</FieldLabel>
               <Textarea id="besoin" name="besoin" rows={4} aria-invalid={invalide("besoin")} />
