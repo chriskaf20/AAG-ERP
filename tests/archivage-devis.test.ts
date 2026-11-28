@@ -28,6 +28,17 @@ function recette() {
   return { etat, operations }
 }
 
+test("une archive retrouvée est réutilisée sans régénération ni dépôt", async () => {
+  const { operations, etat } = recette()
+  const archive = await conserverArchive({
+    ...operations,
+    chercher: async () => "archive-historique",
+    preparer: async () => assert.fail("la préparation du PDF est inutile"),
+  })
+  assert.equal(archive, "archive-historique")
+  assert.equal(etat.upload, 0)
+})
+
 test("une panne de dépôt conserve le devis sans créer une archive vide, puis la reprise aboutit", async () => {
   const { etat, operations } = recette()
   etat.panneDepot = true

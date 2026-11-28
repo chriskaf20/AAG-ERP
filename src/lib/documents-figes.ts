@@ -11,9 +11,9 @@ export async function archiverDevisSigne(devisId: string) {
 
   return conserverArchive({
     async chercher() {
-      const { data, error } = await admin.from("documents").select("id").eq("devis_archive_id", devisId).maybeSingle()
+      const { data, error } = await admin.rpc("rattacher_archive_devis_existante", { p_devis: devisId })
       if (error) throw error
-      return data?.id ?? null
+      return data ?? null
     },
     async preparer() {
       const donnees = await donneesDevis(admin, devisId)

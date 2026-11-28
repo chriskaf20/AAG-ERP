@@ -3675,6 +3675,7 @@ export type Database = {
         Args: { p_devis: string; p_chemin: string; p_nom: string; p_taille: number }
         Returns: string
       }
+      rattacher_archive_devis_existante: { Args: { p_devis: string }; Returns: string }
       invitation_rattachee: { Args: { p_invitation: string; p_user: string }; Returns: boolean }
       portail_comptes_gerant: {
         Args: { p_org: string }
