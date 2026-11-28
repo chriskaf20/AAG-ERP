@@ -20,6 +20,7 @@ import { SiteHeader } from "@/components/site-header"
 import { StatutBadge } from "@/components/statut-badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { dateFacturation, trancheImpaye } from "@/lib/anciennete-factures"
 import { getContexte, getOrgId, getSupabase } from "@/lib/contexte"
 import { formatDate, formatDateHeure, formatMontant } from "@/lib/format"
 import type { Indicateurs } from "@/lib/indicateurs"
@@ -116,7 +117,8 @@ export default async function TableauDeBord() {
   if (a(p, "factures.write") && factures) {
     const ouvertes = factures.filter((f) => !["brouillon", "payee", "annulee"].includes(f.statut) && (f.solde_du ?? 0) > 0)
     const acomptes = ouvertes.filter((f) => f.type === "acompte")
-    const echus = ouvertes.filter((f) => f.echeance && f.echeance < new Date().toISOString().slice(0, 10))
+    const aujourdHui = dateFacturation()
+    const echus = ouvertes.filter((f) => trancheImpaye(f.echeance, aujourdHui) !== "non_echu")
     cartes.push(
       {
         libelle: "Acomptes à encaisser",

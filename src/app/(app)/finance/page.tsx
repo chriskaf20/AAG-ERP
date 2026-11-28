@@ -8,28 +8,11 @@ import { SectionCards } from "@/components/section-cards"
 import { SiteHeader } from "@/components/site-header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { dateFacturation, trancheImpaye, TRANCHES_IMPAYES } from "@/lib/anciennete-factures"
 import { exiger } from "@/lib/contexte"
 import { formatDate, formatMontant } from "@/lib/format"
 
 export const metadata: Metadata = { title: "Finance" }
-
-const TRANCHES = [
-  { cle: "non_echu", libelle: "Non échu" },
-  { cle: "0_30", libelle: "1–30 j" },
-  { cle: "31_60", libelle: "31–60 j" },
-  { cle: "61_90", libelle: "61–90 j" },
-  { cle: "90_plus", libelle: "> 90 j" },
-] as const
-
-function tranche(echeance: string | null) {
-  if (!echeance) return "non_echu"
-  const jours = Math.floor((Date.now() - new Date(`${echeance}T23:59:59Z`).getTime()) / 86_400_000)
-  if (jours < 0) return "non_echu"
-  if (jours <= 30) return "0_30"
-  if (jours <= 60) return "31_60"
-  if (jours <= 90) return "61_90"
-  return "90_plus"
-}
 
 export default async function TableauDeBordFinance() {
   const { supabase, organisation } = await exiger("factures.write")
@@ -62,12 +45,13 @@ export default async function TableauDeBordFinance() {
   )
   const aNormaliser = fs.filter((f) => f.statut !== "brouillon" && f.statut !== "annulee" && !f.normalisee_le)
 
-  const balance = Object.fromEntries(TRANCHES.map((t) => [t.cle, { montant: 0, nb: 0 }])) as Record<
-    (typeof TRANCHES)[number]["cle"],
+  const aujourdHui = dateFacturation()
+  const balance = Object.fromEntries(TRANCHES_IMPAYES.map((t) => [t.cle, { montant: 0, nb: 0 }])) as Record<
+    (typeof TRANCHES_IMPAYES)[number]["cle"],
     { montant: number; nb: number }
   >
   for (const f of ouvertes) {
-    const b = balance[tranche(f.echeance)]
+    const b = balance[trancheImpaye(f.echeance, aujourdHui)]
     b.montant += enUsd(f.solde_du, f.devise, f.taux_cdf)
     b.nb += 1
   }
@@ -117,7 +101,7 @@ export default async function TableauDeBordFinance() {
               <CardDescription>Jours de retard après échéance</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              {TRANCHES.map((t) => {
+              {TRANCHES_IMPAYES.map((t) => {
                 const b = balance[t.cle]
                 return (
                   <div key={t.cle} className="flex flex-col gap-1">
