@@ -7,7 +7,7 @@ revendu plus tard à d'autres PME (multi-entreprise).
 - Next.js (App Router) + TypeScript + Tailwind + shadcn/ui
 - Supabase : Postgres, Auth, Storage, Edge Functions, Row Level Security
   (utiliser le MCP Supabase pour créer le projet et appliquer les migrations)
-- Déploiement Vercel : erp.atlasafricagroup.com
+- Déploiement Vercel : https://aag-erp.vercel.app
 - Interface en français (prête pour l'anglais via i18n), responsive mobile d'abord
 - Couleurs : bleu marine #0B1F4B (primary), or #C9A13B (accent),
   logo dans public/logo.png

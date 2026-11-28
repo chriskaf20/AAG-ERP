@@ -21,7 +21,7 @@ type Relance = {
   simulation: boolean
 }
 
-const APP_URL = Deno.env.get("APP_URL") ?? "https://erp.atlasafricagroup.com"
+const APP_URL = Deno.env.get("APP_URL") ?? "https://aag-erp.vercel.app"
 const FROM = Deno.env.get("RESEND_FROM") ?? "facturation@atlasafricagroup.com"
 
 const echap = (s: string) =>
