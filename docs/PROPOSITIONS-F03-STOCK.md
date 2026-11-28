@@ -20,7 +20,21 @@ Le responsable désigné du dossier rédige et soumet la version. Le responsable
 
 Pour une création ou une refonte, tout passage en **En cours** exige la validation Digital et l’accord client sur la dernière version enregistrée, même si cette version est encore en brouillon. L’ouverture d’une révision ne change pas le statut d’un dossier déjà en cours. Si le dossier doit repasser en cours, la version courante est de nouveau contrôlée.
 
-Le F‑01 permet de préciser le type de projet web. La migration reprend les libellés usuels tels que « Site web », « Création de site web » et « Refonte du site Internet ». Vérifier les anciens libellés libres atypiques au moment de préparer la bascule.
+Le F‑01 permet de préciser le type de projet web. Le serveur reconnaît une prestation explicite, y compris « CRÉATION D’UN SITE INTERNET », « Refonte du site Internet » et « Site vitrine – refonte ». « Site web » seul, « Audit préalable à la refonte du site web » et « Création de contenu pour un site internet » demandent une lecture du besoin. Le canal de réception et le département ne déterminent pas le classement.
+
+Avant la bascule, examiner les anciens dossiers dont le service ne suffit pas à confirmer le type. La requête ci-dessous s’exécute en lecture seule sur une copie après migration, avec le rôle de migration. Elle inclut aussi les services sans vocabulaire web pour retrouver un projet décrit uniquement par un nom interne. Pour chaque candidat, confronter le besoin au devis signé et aux pièces F‑03. Consigner la décision par numéro de dossier et renseigner les créations et refontes confirmées avant d’ouvrir les transitions. Un type vide laisse le parcours ordinaire ouvert. Un choix F‑01 ou un F‑03 déjà engagé est conservé lorsque son origine ne peut pas être déduite du libellé.
+
+```sql
+select d.organization_id, d.numero, d.service, d.besoin, d.statut,
+       d.type_site_web as type_enregistre,
+       exists (select 1 from public.documents p where p.dossier_id = d.id
+               and p.type = 'f03_cahier_charges') as piece_f03,
+       exists (select 1 from public.f03_versions v where v.dossier_id = d.id) as f03_structure
+from public.dossiers d
+where d.type_site_web is null
+   or d.type_site_web is distinct from atlas_prive.type_site_web(d.service)
+order by d.organization_id, d.numero;
+```
 
 ## Valorisation du stock proposée au DAF
 
